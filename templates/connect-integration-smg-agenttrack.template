@@ -1,0 +1,260 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "SMG AgentTrack Stack - Connect integration for Custom Agent/IVR Survey response analysis",
+	"Metadata": {
+		"AWS::CloudFormation::Interface": {
+			"ParameterGroups": [{
+				"Label": {
+					"default": "SMG AgentTrack Parameters"
+				},
+				"Parameters": [
+					"AgentTrackApiUrl",
+					"AgentTrackApiKey",
+					"ConnectInstanceId"
+				]
+			}]
+		}
+	},
+	"Parameters": {
+		"AgentTrackApiUrl": {
+			"AllowedPattern": "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$",
+			"Description": "SMG AgentTrack API URL for communication between Lambdas and the SMG AgentTrack API, in a valid URL format.",
+			"Type": "String"
+		},
+		"AgentTrackApiKey": {
+			"AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
+			"Description": "SMG AgentTrack API Key. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+			"Type": "String"
+		},
+		"ConnectInstanceId": {
+			"AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
+			"Description": "ID of your Connect Instance. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+			"Type": "String"
+		}
+	},
+	"Resources": {
+		"SmgLambdaExecutionRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"Service": ["lambda.amazonaws.com"]
+						},
+						"Action": ["sts:AssumeRole"]
+					}]
+				},
+				"Path": "/",
+				"RoleName": "SmgLambdaExecutionRole",
+				"ManagedPolicyArns": [
+					"arn:aws:iam::aws:policy/AmazonKinesisReadOnlyAccess"
+				]
+			}
+		},
+		"SmgLambdaExecutionPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "SmgLambdaExecutionPolicy",
+				"Roles": [{
+					"Ref": "SmgLambdaExecutionRole"
+				}],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+							"Effect": "Allow",
+							"Action": "logs:CreateLogGroup",
+							"Resource": {
+								"Fn::Join": [
+									"", [
+										"arn:aws:logs:us-east-1:",
+										{
+											"Ref": "AWS::AccountId"
+										},
+										"*"
+									]
+								]
+							}
+						},
+						{
+							"Effect": "Allow",
+							"Action": [
+								"logs:CreateLogStream",
+								"logs:PutLogEvents"
+							],
+							"Resource": [{
+									"Fn::Join": [
+										"", [
+											"arn:aws:logs:us-east-1:",
+											{
+												"Ref": "AWS::AccountId"
+											},
+											":log-group:/aws/lambda/SmgNextQuestionLambda:*"
+										]
+									]
+								},
+
+								{
+									"Fn::Join": [
+										"", [
+											"arn:aws:logs:us-east-1:",
+											{
+												"Ref": "AWS::AccountId"
+											},
+											":log-group:/aws/lambda/SmgPushToSmgLambda:*"
+										]
+									]
+								}
+							]
+						}
+					]
+				}
+			}
+		},
+		"SmgKinesisStream": {
+			"Type": "AWS::Kinesis::Stream",
+			"Properties": {
+				"Name": "SmgKinesisStream",
+				"RetentionPeriodHours": 24,
+				"ShardCount": 1
+			}
+		},
+		"SmgPushToSmgLambda": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"Code": {
+					"S3Bucket": "smg-connect-surveys-lambdas",
+					"S3Key": "SmgPushToSmgLambda.zip"
+				},
+				"Description": "Smg Push To Smg Lambda",
+				"Environment": {
+					"Variables": {
+						"SURVEY_URL": "${AgentTrackApiUrl}/LambdaAccess/ProcessKinesisData"
+					}
+				},
+				"FunctionName": "SmgPushToSmgLambda",
+				"Handler": "index.handler",
+				"MemorySize": 128,
+				"Role": {
+					"Fn::GetAtt": ["SmgLambdaExecutionRole", "Arn"]
+				},
+				"Timeout": 10,
+				"Runtime": "nodejs6.10"
+			}
+		},
+		"SmgNextQuestionLambda": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"Code": {
+					"S3Bucket": "smg-connect-surveys-lambdas",
+					"S3Key": "SmgNextQuestionLambda.zip"
+				},
+				"Description": "Smg Next Survey Question Lambda",
+				"Environment": {
+					"Variables": {
+						"SURVEY_URL": "${AgentTrackApiUrl}/LambdaAccess/NextQuestion?apiKey=${AgentTrackApiKey}&surveyProgress=SURVEYPROGRESS&currentAnswer=CURRENTANSWER"
+					}
+				},
+				"FunctionName": "SmgNextQuestionLambda",
+				"Handler": "index.handler",
+				"MemorySize": 128,
+				"Role": {
+					"Fn::GetAtt": ["SmgLambdaExecutionRole", "Arn"]
+				},
+				"Timeout": 10,
+				"Runtime": "nodejs6.10"
+			}
+		},
+		"SmgLambdaConnectPermission": {
+			"Type": "AWS::Lambda::Permission",
+			"DependsOn": "SmgNextQuestionLambda",
+			"Properties": {
+				"Action": "lambda:InvokeFunction",
+				"FunctionName": "function:SmgNextQuestionLambda",
+				"Principal": "connect.amazonaws.com",
+				"SourceAccount": {
+					"Ref": "AWS::AccountId"
+				},
+				"SourceArn": {
+					"Fn::Join": [
+						"", [
+							"arn:aws:connect:us-east-1:",
+							{
+								"Ref": "AWS::AccountId"
+							},
+							":instance/",
+							"${ConnectInstanceId}"
+						]
+					]
+				}
+			}
+		},
+		"SmgLambdaEventMapping": {
+			"Type": "AWS::Lambda::EventSourceMapping",
+			"Properties": {
+				"BatchSize": 100,
+				"Enabled": true,
+				"EventSourceArn": {
+					"Fn::GetAtt": ["SmgKinesisStream", "Arn"]
+				},
+				"FunctionName": {
+					"Ref": "SmgPushToSmgLambda"
+				},
+				"StartingPosition": "LATEST"
+			}
+		},
+		"KeepSmgPushToSmgLambdaWarmEventRule": {
+			"Type": "AWS::Events::Rule",
+			"DependsOn": "SmgPushToSmgLambda",
+			"Properties": {
+				"Description": "Keeps the lambdas warm by pinging them every (n)minutes.",
+				"ScheduleExpression": "rate(10 minutes)",
+				"State": "ENABLED",
+				"Targets": [{
+					"Arn": {"Fn::GetAtt": ["SmgPushToSmgLambda", "Arn"]},
+					"Id": "SmgPushToSmgLambda",
+					"Input": "{\"keepwarm\": true}"
+				}]
+			}
+		},
+		"KeepSmgNextQuestionLambdaWarmEventRule": {
+			"Type": "AWS::Events::Rule",
+			"DependsOn": "SmgNextQuestionLambda",
+			"Properties": {
+				"Description": "Keeps the lambdas warm by pinging them every (n)minutes.",
+				"ScheduleExpression": "rate(10 minutes)",
+				"State": "ENABLED",
+				"Targets": [{
+					"Arn": {"Fn::GetAtt": ["SmgNextQuestionLambda", "Arn"]},
+					"Id": "SmgNextQuestionLambda",
+					"Input": "{\"keepwarm\": true}"
+				}]
+			}
+		},
+		"PermissionForPushToSmgEventRuleToInvokeLambda": {
+			"Type": "AWS::Lambda::Permission",
+			"DependsOn": "SmgPushToSmgLambda",
+			"Properties": {
+				"FunctionName": {
+					"Ref": "SmgPushToSmgLambda"
+				},
+				"Action": "lambda:InvokeFunction",
+				"Principal": "events.amazonaws.com",
+				"SourceArn": {"Fn::GetAtt": ["KeepSmgPushToSmgLambdaWarmEventRule", "Arn"]}
+			}
+		},
+		"PermissionForNextQuestionEventRuleToInvokeLambda": {
+			"Type": "AWS::Lambda::Permission",
+			"DependsOn": "SmgNextQuestionLambda",
+			"Properties": {
+				"FunctionName": {
+					"Ref": "SmgNextQuestionLambda"
+				},
+				"Action": "lambda:InvokeFunction",
+				"Principal": "events.amazonaws.com",
+				"SourceArn": {"Fn::GetAtt": ["KeepSmgNextQuestionLambdaWarmEventRule", "Arn"]}
+			}
+		}
+	}
+}
