@@ -8,5 +8,5 @@ global:
  
 tests:
   connect-integration-smg-agenttrackt1:
-    parameter_input: connect-integration-smg-agenttrack-params.json
-    template_file: connect-integration-smg-agenttrack.template
+    parameter_input: defaults.json
+    template_file: agenttrack.json
