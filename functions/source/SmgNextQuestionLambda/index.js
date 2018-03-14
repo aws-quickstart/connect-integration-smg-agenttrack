@@ -1,6 +1,10 @@
 var https = require('https');
 exports.handler = (event, context, callback) => {
     var config = {};
+    if(event.body !== undefined){
+        var bodyObj = JSON.parse(event.body);
+        event.Details = bodyObj.Details;
+    }
     var answerQuestionDiff = Date.now() - parseInt(event.Details.Parameters.QuestionTimestamp);
     config.currentAnswer = event.Details.Parameters.CurrentAnswer;
     config.surveyProgress = event.Details.Parameters.SurveyProgress;
@@ -24,13 +28,20 @@ exports.handler = (event, context, callback) => {
         config.response.wrongAnswer = true;
         config.surveyProgressDetail.splice(-1,1)
         updateSurveyProgress(1, config.response.nextQuestion, config.currentAnswer,  config.surveyProgressDetail);
-        config.response.surveyProgressDetail = JSON.stringify(config.surveyProgressDetail);
         if( config.currentAnswer == 'Timeout' || answerQuestionDiff <  config.timeBeforeAnswer){
              config.response.wrongAnswer = false;
              config.response.questionTimestamp =  config.response.questionTimestamp - (config.timeBeforeAnswer*2)
         }
-        config.callback(null, config.response);
-        config.context.succeed();    
+        
+        var lambdaResponse = {
+            "statusCode": 200,
+            "headers": {},
+            "body": JSON.stringify(config.response),
+            "isBase64Encoded": false
+        };
+    
+        config.callback(null, lambdaResponse);
+        config.context.succeed();  
     }
     else{
         getNextQuestion(config);
@@ -66,8 +77,17 @@ function getNextQuestion(config){
  
             console.log('API RETURN IS:');
             console.log(config.response);
-            config.callback(null, config.response);
+            
+           var lambdaResponse = {
+                "statusCode": 200,
+                "headers": {},
+                "body": JSON.stringify(config.response),
+                "isBase64Encoded": false
+            };
+        
+            config.callback(null, lambdaResponse);
             config.context.succeed();
+            
         }) ;
     }).on('error', function(e) {
             console.log('Got error: ' + e.message);
