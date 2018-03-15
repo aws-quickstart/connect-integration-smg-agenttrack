@@ -1,6 +1,11 @@
 var https = require('https');
 exports.handler = (event, context, callback) => {
     var config = {};
+    if (event.keepwarm) {
+        callback(null, 'kept warn');
+        context.succeed();
+        return;
+    }
     if(event.body !== undefined){
         var bodyObj = JSON.parse(event.body);
         event.Details = bodyObj.Details;

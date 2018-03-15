@@ -1,12 +1,21 @@
 var https = require('https');
 var querystring = require('querystring');
+var url = require('url');
 exports.handler = (event, context, callback) => {
     var AWS = require('aws-sdk');
+    if (event.keepwarm) {
+        callback(null, 'kept warn');
+        context.succeed();
+        return;
+    }
+    
+    var parsedUrl = url.parse(process.env.SURVEY_URL);
+
     var params = {
-     MessageBody: (event.body !== undefined)?JSON.stringify(event.body):JSON.stringify(event),
-     PostHost: process.env.SURVEY_HOST,
-     PostPath: process.env.SURVEY_PATH,
-     ApiKey: process.env.SURVEY_APIKEY
+        MessageBody: (event.body !== undefined)?JSON.stringify(event.body):JSON.stringify(event),
+        PostHost: parsedUrl.hostname,
+        PostPath: parsedUrl.path,
+        ApiKey: process.env.SURVEY_APIKEY
     };
     var post_data = querystring.stringify({
         message: params.MessageBody,
