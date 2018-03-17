@@ -398,7 +398,9 @@
 								"Ref": "AWS::AccountId"
 							},
 							":instance/",
-							"${ConnectInstanceId}"
+							{
+								"Ref": "ConnectInstanceId"
+							}
 						]
 					]
 				}
