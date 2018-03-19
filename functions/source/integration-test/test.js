@@ -125,8 +125,7 @@ exports.quickstart = function(event,context) {
           };
           console.log("Oopsie: " + JSON.stringify(e));
           console.log("HTTP Error: " + e.message);
-          send(event,context,"SUCCESS",{SMG:results.errormessage});
-         // send(event,context,"FAILED",{SMG: results.errorMessage});
+          send(event,context,"FAILED",{SMG: results.errorMessage});
         });
   
         req.write(NextQuestionLambdaTestParams);
@@ -134,8 +133,7 @@ exports.quickstart = function(event,context) {
   
       } catch(e) {
         console.log('JavaScript Error: '+e.message);
-        send(event,context,"SUCCESS",{SMG:e.message});
-       // send(event,context,"FAILED",{});
+        send(event,context,"FAILED",{});
       }
 
   } else if (event.RequestType == 'Update') {

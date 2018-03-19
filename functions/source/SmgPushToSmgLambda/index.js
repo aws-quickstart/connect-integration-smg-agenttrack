@@ -35,23 +35,11 @@ exports.handler = (event, context, callback) => {
          res.setEncoding('utf8');
        
       res.on('data', function (chunk) {
-        var lambdaResponse = {
-            "statusCode": 200,
-            "headers": {},
-            "body": 'Response here!!: ' + chunk,
-            "isBase64Encoded": false
-        };
-          callback(null, lambdaResponse);
+          callback(null, 'Response here!!: ' + chunk);
           context.succeed();
       });
        res.on('end', function (chunk) {
-        var lambdaResponse = {
-            "statusCode": 200,
-            "headers": {},
-            "body": 'Response here!!: ' + chunk,
-            "isBase64Encoded": false
-        };
-          callback(null, lambdaResponse);
+          callback(null, 'Response here!!: ' + chunk);
           context.succeed();
       });
     }).on('error', (err) => {

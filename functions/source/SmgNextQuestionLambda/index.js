@@ -37,15 +37,8 @@ exports.handler = (event, context, callback) => {
              config.response.wrongAnswer = false;
              config.response.questionTimestamp =  config.response.questionTimestamp - (config.timeBeforeAnswer*2)
         }
-        
-        var lambdaResponse = {
-            "statusCode": 200,
-            "headers": {},
-            "body": JSON.stringify(config.response),
-            "isBase64Encoded": false
-        };
     
-        config.callback(null, lambdaResponse);
+        config.callback(null, config.response);
         config.context.succeed();  
     }
     else{
@@ -79,18 +72,11 @@ function getNextQuestion(config){
             
             updateSurveyProgress(1, config.response.nextQuestion, config.currentAnswer,  config.surveyProgressDetail, false);
             config.response.surveyProgressDetail = JSON.stringify(config.surveyProgressDetail);
- 
+
             console.log('API RETURN IS:');
             console.log(config.response);
             
-           var lambdaResponse = {
-                "statusCode": 200,
-                "headers": {},
-                "body": JSON.stringify(config.response),
-                "isBase64Encoded": false
-            };
-        
-            config.callback(null, lambdaResponse);
+            config.callback(null, config.response);
             config.context.succeed();
             
         }) ;
