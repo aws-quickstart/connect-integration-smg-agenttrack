@@ -170,7 +170,7 @@
 				"Description": "Smg Next Survey Question Lambda",
 				"Environment": {
 					"Variables": {
-						"SURVEY_URL": {"Fn::Sub": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/NextQuestion?apiKey=${AgentTrackApiKey}&surveyProgress=SURVEYPROGRESS&currentAnswer=CURRENTANSWER"}
+						"SURVEY_URL": {"Fn::Sub": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/NextQuestion?apiKey=${AgentTrackApiKey}&surveyProgress=SURVEYPROGRESS&currentAnswer=CURRENTANSWER&previousQuestionPrefixType=PQUESTIONPREFIXTYPE"}
 					}
 				},
 				"FunctionName": "SmgNextQuestionLambda",
