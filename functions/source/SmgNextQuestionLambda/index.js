@@ -37,7 +37,12 @@ exports.handler = (event, context, callback) => {
              config.response.wrongAnswer = false;
              config.response.questionTimestamp =  config.response.questionTimestamp - (config.timeBeforeAnswer*2)
         }
-    
+        
+        config.response.surveyProgressDetail = JSON.stringify(config.surveyProgressDetail);
+        
+        console.log('LAMBDA RETURN IS:');
+        console.log(config.response);
+
         config.callback(null, config.response);
         config.context.succeed();  
     }
