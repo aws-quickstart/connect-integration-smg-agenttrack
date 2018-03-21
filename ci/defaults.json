@@ -1,9 +1,5 @@
 [
     {
-        "ParameterKey": "AgentTrackApiUrl",
-        "ParameterValue": "https://connect.smg.com/ConnectSurveysAPI/"
-    },
-    {
         "ParameterKey": "AgentTrackApiKey",
         "ParameterValue": "$[alfred_genuuid]"
     },
