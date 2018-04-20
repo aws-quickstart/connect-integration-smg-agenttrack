@@ -46,66 +46,17 @@ exports.quickstart = function(event,context) {
   if (event.RequestType == 'Create') {
 
     console.log(event); // cloud watch
-    var ApiHost = process.env.APIHOST;
-    var nextQuestionPath = process.env.NEXTQUESTION_PATH;
-    var pushToSmgPath = process.env.PUSHTOSMG_PATH;
- 
-    console.log("ApiHost: " + ApiHost);
-    console.log("NextQuestionPath: " + nextQuestionPath);
-    console.log("PushToSMGPath: " + pushToSmgPath);
-    
+
       try {
-          var NextQuestionLambdaTestParams = JSON.stringify({
-              "Details": {
-                "Parameters": {
-                  "QuestionCount": "0",
-                  "ValidResponseValues": "",
-                  "DialedNumber": "+1234567890",
-                  "PreviousResponse": "{}",
-                  "Language": "en-US",
-                  "SurveyProgress": "_",
-                  "TimeBeforeAnswer": "3000",
-                  "MaxQuestionRetries": "3",
-                  "PreviousQuestionPrefixType": "",
-                  "QuestionTimestamp": "",
-                  "ANI": "+1234567890",
-                  "AgentInteraction": "True",
-                  "CurrentAnswer": "",
-                  "SurveyProgressDetail": "[{}]",
-                  "IvrInteraction": "True"
-                }
-              }
-            });
-  
-      /* PushToSmgLambdaParams
-          MessageBody: JSON.stringify(event),
-          PostHost: process.env.SURVEY_HOST,
-          PostPath: process.env.SURVEY_PATH,
-          ApiKey: '${AgentTrackApiKey}'
-      */
-  
-    // console.log("Sending generic SUCCESS for now...");
-   //  send(event,context,"SUCCESS",{});
-  
-  
         var https = require('https');
-  
-        var options = {
-          hostname: ApiHost,
-          path: nextQuestionPath,
-          agent: false,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': NextQuestionLambdaTestParams.length
-          }
-        };
-  
-        var req = https.request(options, function(res) {
+        
+        var req = https.get('https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/NextQuestion', (res) => {
           var dat = '';
-          res.on('data', function(data) {
+        
+          res.on('data', (d) => {
             dat += data;
           });
+
           res.on('end', function() {
   
             console.log(dat); // cloud watch
@@ -116,9 +67,8 @@ exports.quickstart = function(event,context) {
             send(event,context,"SUCCESS",{});
             
           });
-        });
-  
-        req.on('error', function(e) {
+        
+        }).on('error', (e) => {
           var results = {
             lambdaResult: 'Error',
             errorMessage: 'Problem with request: ' + e.message
@@ -127,10 +77,7 @@ exports.quickstart = function(event,context) {
           console.log("HTTP Error: " + e.message);
           send(event,context,"FAILED",{SMG: results.errorMessage});
         });
-  
-        req.write(NextQuestionLambdaTestParams);
-        req.end();
-  
+
       } catch(e) {
         console.log('JavaScript Error: '+e.message);
         send(event,context,"FAILED",{});
