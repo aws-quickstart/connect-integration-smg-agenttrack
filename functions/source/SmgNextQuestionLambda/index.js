@@ -2,7 +2,7 @@ var https = require('https');
 exports.handler = (event, context, callback) => {
     var config = {};
     if (event.keepwarm) {
-        callback(null, 'kept warn');
+        callback(null, 'kept warm');
         context.succeed();
         return;
     }

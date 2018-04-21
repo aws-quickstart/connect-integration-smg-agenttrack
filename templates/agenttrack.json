@@ -214,128 +214,18 @@
                 "StartingPosition": "LATEST"
             }
         },
-        "SmgAPI": {
-            "Type": "AWS::ApiGateway::RestApi",
-            "Properties": {
-                "Description": "SMG Lambda API",
-                "Name": "SmgAPI"
-            }
-        },
-        "SmgPushToSmgLambdaResource": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
-                "RestApiId": {
-                    "Ref": "SmgAPI"
-                },
-                "ParentId": {
-                    "Fn::GetAtt": [
-                        "SmgAPI",
-                        "RootResourceId"
-                    ]
-                },
-                "PathPart": "SmgPushToSmgLambda"
-            }
-        },
-        "SmgPushToSmgLambdaMethod": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
-                "RestApiId": {
-                    "Ref": "SmgAPI"
-                },
-                "ResourceId": {
-                    "Ref": "SmgPushToSmgLambdaResource"
-                },
-                "HttpMethod": "POST",
-                "AuthorizationType": "NONE",
-                "Integration": {
-                    "Type": "AWS_PROXY",
-                    "IntegrationHttpMethod": "POST",
-                    "Uri": {
-                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SmgPushToSmgLambda.Arn}/invocations"
-                    }
-                }
-            }
-        },
-        "SmgNextQuestionLambdaResource": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
-                "RestApiId": {
-                    "Ref": "SmgAPI"
-                },
-                "ParentId": {
-                    "Fn::GetAtt": [
-                        "SmgAPI",
-                        "RootResourceId"
-                    ]
-                },
-                "PathPart": "SmgNextQuestionLambda"
-            }
-        },
-        "SmgNextQuestionLambdaMethod": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
-                "RestApiId": {
-                    "Ref": "SmgAPI"
-                },
-                "ResourceId": {
-                    "Ref": "SmgNextQuestionLambdaResource"
-                },
-                "HttpMethod": "POST",
-                "AuthorizationType": "NONE",
-                "Integration": {
-                    "Type": "AWS_PROXY",
-                    "IntegrationHttpMethod": "POST",
-                    "Uri": {
-                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SmgNextQuestionLambda.Arn}/invocations"
-                    }
-                }
-            }
-        },
-        "SmgApiDeployment": {
-            "Type": "AWS::ApiGateway::Deployment",
-            "DependsOn": [
-                "SmgPushToSmgLambdaMethod",
-                "SmgNextQuestionLambdaMethod",
-                "SmgAPI"
-            ],
-            "Properties": {
-                "RestApiId": {
-                    "Ref": "SmgAPI"
-                },
-                "Description": "SMG Lambda API Endpoints",
-                "StageName": "SmgStage"
-            }
-        },
         "SmgStackTestLambda": {
             "Type": "AWS::Lambda::Function",
             "DependsOn": [
                 "SmgPushToSmgLambda",
-                "SmgNextQuestionLambda",
-                "SmgApiDeployment"
+                "SmgNextQuestionLambda"
             ],
             "Properties": {
                 "Handler": "test.quickstart",
                 "Runtime": "nodejs6.10",
                 "Description": "Checks for lambda deployment success",
                 "Environment": {
-                    "Variables": {
-                        "APIHOST": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "SmgAPI"
-                                    },
-                                    ".execute-api.",
-                                    {
-                                        "Fn::Sub": "${AWS::Region}.amazonaws.com"
-                                    }
-                                ]
-                            ]
-                        },
-                        "NEXTQUESTION_PATH": "/SmgStage/SmgNextQuestionLambda",
-                        "PUSHTOSMG_PATH": "/SmgStage/SmgPushToSmgLambda"
-                    }
+                    "Variables": {}
                 },
                 "MemorySize": 128,
                 "Timeout": 30,
@@ -348,35 +238,6 @@
                 "Code": {
                     "S3Bucket": "aws-quickstart",
                     "S3Key": "connect-integration-smg-agenttrack/functions/packages/integration-test/lambda.zip"
-                }
-            }
-        },
-        "SmgStackTestResource": {
-            "Type": "Custom::SmgStackTest",
-            "DependsOn": [
-                "SmgApiDeployment",
-                "SmgStackTestLambda",
-                "SmgAPI"
-            ],
-            "Properties": {
-                "ServiceToken": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            "arn:aws:lambda:",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            ":",
-                            {
-                                "Ref": "AWS::AccountId"
-                            },
-                            ":function:",
-                            {
-                                "Ref": "SmgStackTestLambda"
-                            }
-                        ]
-                    ]
                 }
             }
         },
@@ -444,106 +305,6 @@
                             {
                                 "Ref": "ConnectInstanceId"
                             }
-                        ]
-                    ]
-                }
-            }
-        },
-        "PermissionForPushToSmgEventRuleToInvokeLambda": {
-            "Type": "AWS::Lambda::Permission",
-            "DependsOn": "SmgPushToSmgLambda",
-            "Properties": {
-                "FunctionName": {
-                    "Ref": "SmgPushToSmgLambda"
-                },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "events.amazonaws.com",
-                "SourceArn": {
-                    "Fn::GetAtt": [
-                        "KeepSmgPushToSmgLambdaWarmEventRule",
-                        "Arn"
-                    ]
-                }
-            }
-        },
-        "PermissionForNextQuestionEventRuleToInvokeLambda": {
-            "Type": "AWS::Lambda::Permission",
-            "DependsOn": "SmgNextQuestionLambda",
-            "Properties": {
-                "FunctionName": {
-                    "Ref": "SmgNextQuestionLambda"
-                },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "events.amazonaws.com",
-                "SourceArn": {
-                    "Fn::GetAtt": [
-                        "KeepSmgNextQuestionLambdaWarmEventRule",
-                        "Arn"
-                    ]
-                }
-            }
-        },
-        "SmgPushToSmgLambdaApiPermission": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-                "FunctionName": {
-                    "Fn::GetAtt": [
-                        "SmgPushToSmgLambda",
-                        "Arn"
-                    ]
-                },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "apigateway.amazonaws.com",
-                "SourceArn": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            "arn:aws:execute-api:",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            ":",
-                            {
-                                "Ref": "AWS::AccountId"
-                            },
-                            ":",
-                            {
-                                "Ref": "SmgAPI"
-                            },
-                            "/*"
-                        ]
-                    ]
-                }
-            }
-        },
-        "SmgNextQuestionLambdaApiPermission": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-                "FunctionName": {
-                    "Fn::GetAtt": [
-                        "SmgNextQuestionLambda",
-                        "Arn"
-                    ]
-                },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "apigateway.amazonaws.com",
-                "SourceArn": {
-                    "Fn::Join": [
-                        "",
-                        [
-                            "arn:aws:execute-api:",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            ":",
-                            {
-                                "Ref": "AWS::AccountId"
-                            },
-                            ":",
-                            {
-                                "Ref": "SmgAPI"
-                            },
-                            "/*"
                         ]
                     ]
                 }

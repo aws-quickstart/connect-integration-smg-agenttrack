@@ -4,7 +4,7 @@ var url = require('url');
 exports.handler = (event, context, callback) => {
     var AWS = require('aws-sdk');
     if (event.keepwarm) {
-        callback(null, 'kept warn');
+        callback(null, 'kept warm');
         context.succeed();
         return;
     }
