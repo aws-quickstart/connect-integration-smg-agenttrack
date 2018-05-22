@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "SMG AgentTrack Stack - Connect integration for Custom Agent/IVR Survey response analysis",
+    "Description": "Post call surveys powered by SMG AgentTrack integration for Amazon Connect (qs-1ofbedn5m)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -20,12 +20,33 @@
         "AgentTrackApiKey": {
             "AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
             "Description": "SMG AgentTrack API Key. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+            "ConstraintDescription": "SMG Agent Track API key contains upper and lower case letters, numbers and dashes (-).",
             "Type": "String"
         },
         "ConnectInstanceId": {
-            "AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
             "Description": "ID of your Connect Instance. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+            "AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
+            "ConstraintDescription": "Amazon Connect instance ID contains upper and lower case letters, numbers and dashes (-).",
             "Type": "String"
+        }
+    },
+    "Rules": {
+        "RegionSupport": {
+            "Assertions": [
+                {
+                    "Assert": {
+                        "Fn::Contains": [
+                            [
+                                "us-east-1"
+                            ],
+                            {
+                                "Ref": "AWS::Region"
+                            }
+                        ]
+                    },
+                    "AssertDescription": "Supported regions: US East (N. Virginia) - us-east-1"
+                }
+            ]
         }
     },
     "Resources": {
@@ -156,7 +177,6 @@
                         }
                     }
                 },
-                "FunctionName": "SmgPushToSmgLambda",
                 "Handler": "index.handler",
                 "MemorySize": 128,
                 "Role": {
@@ -184,7 +204,6 @@
                         }
                     }
                 },
-                "FunctionName": "SmgNextQuestionLambda",
                 "Handler": "index.handler",
                 "MemorySize": 128,
                 "Role": {
@@ -216,17 +235,10 @@
         },
         "SmgStackTestLambda": {
             "Type": "AWS::Lambda::Function",
-            "DependsOn": [
-                "SmgPushToSmgLambda",
-                "SmgNextQuestionLambda"
-            ],
             "Properties": {
                 "Handler": "test.quickstart",
                 "Runtime": "nodejs6.10",
-                "Description": "Checks for lambda deployment success",
-                "Environment": {
-                    "Variables": {}
-                },
+                "Description": "SMG AgentTrack integration test",
                 "MemorySize": 128,
                 "Timeout": 30,
                 "Role": {
@@ -238,6 +250,20 @@
                 "Code": {
                     "S3Bucket": "aws-quickstart",
                     "S3Key": "connect-integration-smg-agenttrack/functions/packages/integration-test/lambda.zip"
+                }
+            }
+        },
+        "SmgIntegrationTest": {
+            "Type": "Custom::SmgIntegrationTest",
+            "Version": "1.0",
+            "DependsOn": "SmgStackTestLambda",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": "SmgStackTestLambda.Arn"
+                },
+                "SURVEY_URL": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/ProcessKinesisData",
+                "SURVEY_APIKEY": {
+                    "Fn::Sub": "${AgentTrackApiKey}"
                 }
             }
         },
@@ -288,7 +314,9 @@
             "DependsOn": "SmgNextQuestionLambda",
             "Properties": {
                 "Action": "lambda:InvokeFunction",
-                "FunctionName": "function:SmgNextQuestionLambda",
+                "FunctionName": {
+                    "Ref": "SmgNextQuestionLambda"
+                },
                 "Principal": "connect.amazonaws.com",
                 "SourceAccount": {
                     "Ref": "AWS::AccountId"
@@ -308,6 +336,35 @@
                         ]
                     ]
                 }
+            }
+        }
+    },
+    "Outputs": {
+        "SmgPushToSmgLambda": {
+            "Description": "The ARN of the SmgPushToSmgLambda Lambda",
+            "Value": {
+                "Fn::GetAtt": [
+                    "SmgPushToSmgLambda",
+                    "Arn"
+                ]
+            }
+        },
+        "SmgNextQuestionLambda": {
+            "Description": "The ARN of the SmgNextQuestionLambda Lambda",
+            "Value": {
+                "Fn::GetAtt": [
+                    "SmgNextQuestionLambda",
+                    "Arn"
+                ]
+            }
+        },
+        "SmgKinesisStream": {
+            "Description": "The ARN of the SMG Kinesis Stream",
+            "Value": {
+                "Fn::GetAtt": [
+                    "SmgKinesisStream",
+                    "Arn"
+                ]
             }
         }
     }
