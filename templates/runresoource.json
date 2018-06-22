@@ -1,0 +1,35 @@
+{
+
+
+    "InvokeIntegrationTestFunction": {
+        "Type": "Custom::InvokeIntegrationTestFunction",
+        "Version": "1.0",
+        "DependsOn": "SmgIntegrationTest",
+        "Properties": {
+            "apiKey": {
+                "Fn::Sub": "${AgentTrackApiKey}"
+            },
+            "connectInstanceId": {
+                "Fn::Sub": "${ConnectInstanceId}"
+            },
+            "ServiceToken": {
+                "Fn::GetAtt": "SmgIntegrationTest.Arn"
+            }
+        }
+    },
+    "SmgIntegrationTest": {
+        "Type": "Custom::SmgIntegrationTest",
+        "Version": "1.0",
+        "DependsOn": "SmgStackTestLambda",
+        "Properties": {
+            "ServiceToken": {
+                "Fn::GetAtt": "SmgStackTestLambda.Arn"
+            },
+            "SURVEY_URL": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/ProcessKinesisData",
+            "SURVEY_APIKEY": {
+                "Fn::Sub": "${AgentTrackApiKey}"
+            }
+        }
+    }
+
+}
