@@ -1,3 +1,4 @@
+var https = require('https');
 var send = function (event, context, responseStatus, responseData, physicalResourceId) {
 
   var responseBody = JSON.stringify({
@@ -12,7 +13,7 @@ var send = function (event, context, responseStatus, responseData, physicalResou
 
   console.log("Response body:\n", responseBody);
 
-  var https = require("https");
+
   var url = require("url");
 
   var parsedUrl = url.parse(event.ResponseURL);
@@ -59,7 +60,6 @@ exports.quickstart = function (event, context) {
     context,
     apiKey: event.ResourceProperties.apiKey,
     mode: event.ResourceProperties.mode || "Prod",
-    https: require('https'),
     connectInstanceId: event.ResourceProperties.connectInstanceId,
     currentMethod: 0,
     getDataUrlMethods: [
@@ -69,11 +69,17 @@ exports.quickstart = function (event, context) {
     postGetDataActions: [
       (state, dataReturnedFromGet) => {
         try {
-          state.customer = JSON.parse(dataReturnedFromGet);
-          if (state.customer && state.customer.id) {
-            state.currentMethod++;
-            getData(state);
-            return;
+          if (dataReturnedFromGet) {
+            state.customer = JSON.parse(dataReturnedFromGet);
+            //console.log("GetData returned: " + JSON.stringify(state.customer));
+            if (state.customer && state.customer.id) {
+
+              state.currentMethod++;
+              getData(state);
+              return;
+            }
+          } else {
+            //console.log("first query failed")
           }
         } catch (err) {
           console.log(err.message);
@@ -82,6 +88,7 @@ exports.quickstart = function (event, context) {
       },
       (state, dataReturnedFromGet) => {
         var d = JSON.parse(dataReturnedFromGet);
+        //console.log("GetData returned: " + JSON.stringify(d));
         if (d.connectInstance && d.connectInstance === state.connectInstanceId) {
           console.log("Success")
           send(state.event, state.context, "SUCCESS", {});
@@ -91,7 +98,7 @@ exports.quickstart = function (event, context) {
       }
     ]
   };
-
+  //console.log(JSON.stringify(state));
   getData(state);
 };
 
@@ -102,7 +109,9 @@ function fail(state) {
 
 function getData(state) {
   try {
-    var req = state.https.get(state.getDataUrlMethods[state.currentMethod](state), (res) => {
+    var theUrl = state.getDataUrlMethods[state.currentMethod](state);
+    //console.log(theUrl);
+    var req = https.get(theUrl, (res) => {
       var dat = '';
       res.on('data', (d) => dat += d);
       res.on('end', () => state.postGetDataActions[state.currentMethod](state, dat));
@@ -120,6 +129,7 @@ function getData(state) {
     });
 
   } catch (e) {
+    console.log("GetData Failed: " + e.message);
     fail(state);
   }
 }
