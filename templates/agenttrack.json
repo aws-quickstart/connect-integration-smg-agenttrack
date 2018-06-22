@@ -122,7 +122,11 @@
                                             {
                                                 "Ref": "AWS::AccountId"
                                             },
-                                            ":log-group:/aws/lambda/SmgNextQuestionLambda:*"
+                                            ":log-group:/aws/lambda/",
+                                            {
+                                                "Ref": "SmgNextQuestionLambda"
+                                            },
+                                            ":*"
                                         ]
                                     ]
                                 },
@@ -133,7 +137,11 @@
                                             {
                                                 "Ref": "AWS::AccountId"
                                             },
-                                            ":log-group:/aws/lambda/SmgPushToSmgLambda:*"
+                                            ":log-group:/aws/lambda/",
+                                            {
+                                                "Ref": "SmgPushToSmgLambda"
+                                            },
+                                            ":*"
                                         ]
                                     ]
                                 },
@@ -144,7 +152,11 @@
                                             {
                                                 "Ref": "AWS::AccountId"
                                             },
-                                            ":log-group:/aws/lambda/SmgStackTestLambda:*"
+                                            ":log-group:/aws/lambda/",
+                                            {
+                                                "Ref": "SmgStackTestLambda"
+                                            },
+                                            ":*"
                                         ]
                                     ]
                                 }
@@ -165,7 +177,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Code": {
-                    "S3Bucket": "tom.huguenard",
+                    "S3Bucket": "aws-quickstart",
                     "S3Key": "connect-integration-smg-agenttrack/functions/packages/SmgPushToSmgLambda/lambda.zip"
                 },
                 "Description": "Smg Push To Smg Lambda",
@@ -193,7 +205,7 @@
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Code": {
-                    "S3Bucket": "tom.huguenard",
+                    "S3Bucket": "aws-quickstart",
                     "S3Key": "connect-integration-smg-agenttrack/functions/packages/SmgNextQuestionLambda/lambda.zip"
                 },
                 "Description": "Smg Next Survey Question Lambda",
@@ -248,7 +260,7 @@
                     ]
                 },
                 "Code": {
-                    "S3Bucket": "tom.huguenard",
+                    "S3Bucket": "aws-quickstart",
                     "S3Key": "connect-integration-smg-agenttrack/functions/packages/IntegrationTest/lambda.zip"
                 }
             }
