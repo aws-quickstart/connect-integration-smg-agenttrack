@@ -1,6 +1,6 @@
 var https = require('https');
-var querystring = require('./querystring');
-var url = require('./url');
+var querystring = require('querystring');
+var url = require('url');
 exports.handler = (event, context, callback) => {
     var AWS = require('aws-sdk');
     if (event.keepwarm) {
