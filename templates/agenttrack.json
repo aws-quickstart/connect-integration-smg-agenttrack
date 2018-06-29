@@ -46,22 +46,6 @@
         }
     },
     "Resources": {
-        "InvokeIntegrationTestFunction": {
-            "Type": "Custom::InvokeIntegrationTestFunction",
-            "Version": "1.0",
-            "DependsOn": "SmgStackTestLambda",
-            "Properties": {
-                "apiKey": {
-                    "Fn::Sub": "${AgentTrackApiKey}"
-                },
-                "connectInstanceId": {
-                    "Fn::Sub": "${ConnectInstanceId}"
-                },
-                "ServiceToken": {
-                    "Fn::GetAtt": "SmgStackTestLambda.Arn"
-                }
-            }
-        },
         "SmgLambdaExecutionRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -80,6 +64,7 @@
                     }]
                 },
                 "Path": "/",
+                "RoleName": "SmgLambdaExecutionRole",
                 "ManagedPolicyArns": [
                     "arn:aws:iam::aws:policy/AmazonKinesisReadOnlyAccess"
                 ]
@@ -122,11 +107,7 @@
                                             {
                                                 "Ref": "AWS::AccountId"
                                             },
-                                            ":log-group:/aws/lambda/",
-                                            {
-                                                "Ref": "SmgNextQuestionLambda"
-                                            },
-                                            ":*"
+                                            ":log-group:/aws/lambda/SmgNextQuestionLambda:*"
                                         ]
                                     ]
                                 },
@@ -137,11 +118,7 @@
                                             {
                                                 "Ref": "AWS::AccountId"
                                             },
-                                            ":log-group:/aws/lambda/",
-                                            {
-                                                "Ref": "SmgPushToSmgLambda"
-                                            },
-                                            ":*"
+                                            ":log-group:/aws/lambda/SmgPushToSmgLambda:*"
                                         ]
                                     ]
                                 },
@@ -152,11 +129,7 @@
                                             {
                                                 "Ref": "AWS::AccountId"
                                             },
-                                            ":log-group:/aws/lambda/",
-                                            {
-                                                "Ref": "SmgStackTestLambda"
-                                            },
-                                            ":*"
+                                            ":log-group:/aws/lambda/SmgStackTestLambda:*"
                                         ]
                                     ]
                                 }
@@ -169,6 +142,7 @@
         "SmgKinesisStream": {
             "Type": "AWS::Kinesis::Stream",
             "Properties": {
+                "Name": "SmgKinesisStream",
                 "RetentionPeriodHours": 24,
                 "ShardCount": 1
             }
@@ -248,7 +222,7 @@
         "SmgStackTestLambda": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Handler": "index.quickstart",
+                "Handler": "test.quickstart",
                 "Runtime": "nodejs6.10",
                 "Description": "SMG AgentTrack integration test",
                 "MemorySize": 128,
@@ -261,7 +235,21 @@
                 },
                 "Code": {
                     "S3Bucket": "aws-quickstart",
-                    "S3Key": "connect-integration-smg-agenttrack/functions/packages/IntegrationTest/lambda.zip"
+                    "S3Key": "connect-integration-smg-agenttrack/functions/packages/integration-test/lambda.zip"
+                }
+            }
+        },
+        "SmgIntegrationTest": {
+            "Type": "Custom::SmgIntegrationTest",
+            "Version": "1.0",
+            "DependsOn": "SmgStackTestLambda",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": "SmgStackTestLambda.Arn"
+                },
+                "SURVEY_URL": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/ProcessKinesisData",
+                "SURVEY_APIKEY": {
+                    "Fn::Sub": "${AgentTrackApiKey}"
                 }
             }
         },
