@@ -1,0 +1,10 @@
+[
+    {
+        "ParameterKey": "AgentTrackApiKey",
+        "ParameterValue": "$[alfred_genuuid]"
+    },
+    {
+        "ParameterKey": "ConnectInstanceId",
+        "ParameterValue": "$[alfred_genuuid]"
+    }
+]
