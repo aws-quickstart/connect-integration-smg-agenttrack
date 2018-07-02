@@ -3,15 +3,17 @@
     "Description": "Post call surveys powered by SMG AgentTrack integration for Amazon Connect (qs-1ofbedn5m)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
-            "ParameterGroups": [{
-                "Label": {
-                    "default": "SMG AgentTrack Parameters"
-                },
-                "Parameters": [
-                    "AgentTrackApiKey",
-                    "ConnectInstanceId"
-                ]
-            }]
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "SMG AgentTrack Parameters"
+                    },
+                    "Parameters": [
+                        "AgentTrackApiKey",
+                        "ConnectInstanceId"
+                    ]
+                }
+            ]
         }
     },
     "Parameters": {
@@ -30,19 +32,21 @@
     },
     "Rules": {
         "RegionSupport": {
-            "Assertions": [{
-                "Assert": {
-                    "Fn::Contains": [
-                        [
-                            "us-east-1"
-                        ],
-                        {
-                            "Ref": "AWS::Region"
-                        }
-                    ]
-                },
-                "AssertDescription": "Supported regions: US East (N. Virginia) - us-east-1"
-            }]
+            "Assertions": [
+                {
+                    "Assert": {
+                        "Fn::Contains": [
+                            [
+                                "us-east-1"
+                            ],
+                            {
+                                "Ref": "AWS::Region"
+                            }
+                        ]
+                    },
+                    "AssertDescription": "Supported regions: US East (N. Virginia) - us-east-1"
+                }
+            ]
         }
     },
     "Resources": {
@@ -51,17 +55,19 @@
             "Properties": {
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
-                    "Statement": [{
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": [
-                                "lambda.amazonaws.com"
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
                             ]
-                        },
-                        "Action": [
-                            "sts:AssumeRole"
-                        ]
-                    }]
+                        }
+                    ]
                 },
                 "Path": "/",
                 "RoleName": "SmgLambdaExecutionRole",
@@ -74,17 +80,21 @@
             "Type": "AWS::IAM::Policy",
             "Properties": {
                 "PolicyName": "SmgLambdaExecutionPolicy",
-                "Roles": [{
-                    "Ref": "SmgLambdaExecutionRole"
-                }],
+                "Roles": [
+                    {
+                        "Ref": "SmgLambdaExecutionRole"
+                    }
+                ],
                 "PolicyDocument": {
                     "Version": "2012-10-17",
-                    "Statement": [{
+                    "Statement": [
+                        {
                             "Effect": "Allow",
                             "Action": "logs:CreateLogGroup",
                             "Resource": {
                                 "Fn::Join": [
-                                    "", [
+                                    "",
+                                    [
                                         "arn:aws:logs:us-east-1:",
                                         {
                                             "Ref": "AWS::AccountId"
@@ -100,9 +110,11 @@
                                 "logs:CreateLogStream",
                                 "logs:PutLogEvents"
                             ],
-                            "Resource": [{
+                            "Resource": [
+                                {
                                     "Fn::Join": [
-                                        "", [
+                                        "",
+                                        [
                                             "arn:aws:logs:us-east-1:",
                                             {
                                                 "Ref": "AWS::AccountId"
@@ -113,7 +125,8 @@
                                 },
                                 {
                                     "Fn::Join": [
-                                        "", [
+                                        "",
+                                        [
                                             "arn:aws:logs:us-east-1:",
                                             {
                                                 "Ref": "AWS::AccountId"
@@ -124,7 +137,8 @@
                                 },
                                 {
                                     "Fn::Join": [
-                                        "", [
+                                        "",
+                                        [
                                             "arn:aws:logs:us-east-1:",
                                             {
                                                 "Ref": "AWS::AccountId"
@@ -235,7 +249,7 @@
                 },
                 "Code": {
                     "S3Bucket": "aws-quickstart",
-                    "S3Key": "connect-integration-smg-agenttrack/functions/packages/integration-test/lambda.zip"
+                    "S3Key": "connect-integration-smg-agenttrack/functions/packages/IntegrationTest/lambda.zip"
                 }
             }
         },
@@ -260,16 +274,18 @@
                 "Description": "Keeps the lambdas warm by pinging them every (n)minutes.",
                 "ScheduleExpression": "rate(10 minutes)",
                 "State": "ENABLED",
-                "Targets": [{
-                    "Arn": {
-                        "Fn::GetAtt": [
-                            "SmgPushToSmgLambda",
-                            "Arn"
-                        ]
-                    },
-                    "Id": "SmgPushToSmgLambda",
-                    "Input": "{\"keepwarm\": true}"
-                }]
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "SmgPushToSmgLambda",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "SmgPushToSmgLambda",
+                        "Input": "{\"keepwarm\": true}"
+                    }
+                ]
             }
         },
         "KeepSmgNextQuestionLambdaWarmEventRule": {
@@ -279,16 +295,18 @@
                 "Description": "Keeps the lambdas warm by pinging them every (n)minutes.",
                 "ScheduleExpression": "rate(10 minutes)",
                 "State": "ENABLED",
-                "Targets": [{
-                    "Arn": {
-                        "Fn::GetAtt": [
-                            "SmgNextQuestionLambda",
-                            "Arn"
-                        ]
-                    },
-                    "Id": "SmgNextQuestionLambda",
-                    "Input": "{\"keepwarm\": true}"
-                }]
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "SmgNextQuestionLambda",
+                                "Arn"
+                            ]
+                        },
+                        "Id": "SmgNextQuestionLambda",
+                        "Input": "{\"keepwarm\": true}"
+                    }
+                ]
             }
         },
         "SmgLambdaConnectPermission": {
@@ -305,7 +323,8 @@
                 },
                 "SourceArn": {
                     "Fn::Join": [
-                        "", [
+                        "",
+                        [
                             "arn:aws:connect:us-east-1:",
                             {
                                 "Ref": "AWS::AccountId"
