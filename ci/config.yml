@@ -1,6 +1,6 @@
 global:
   marketplace-ami: false
-  owner: support@voicefoundry.com
+  owner: mick.casper@waterfield.com
   qsname: connect-integration-smg-agenttrack
   regions:
     - us-east-1
