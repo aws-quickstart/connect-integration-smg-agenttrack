@@ -252,7 +252,7 @@
         "SmgStackTestLambda": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Handler": "test.quickstart",
+                "Handler": "index.quickstart",
                 "Runtime": "nodejs6.10",
                 "Description": "SMG AgentTrack integration test",
                 "MemorySize": 128,
