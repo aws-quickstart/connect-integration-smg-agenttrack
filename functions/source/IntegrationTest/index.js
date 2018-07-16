@@ -87,14 +87,8 @@ exports.quickstart = function (event, context) {
         fail(state);
       },
       (state, dataReturnedFromGet) => {
-        var d = JSON.parse(dataReturnedFromGet);
-        //console.log("GetData returned: " + JSON.stringify(d));
-        if (d.connectInstance && d.connectInstance === state.connectInstanceId) {
-          console.log("Success")
-          send(state.event, state.context, "SUCCESS", {});
-        } else {
-          fail(state);
-        }
+        console.log("Success")
+        send(state.event, state.context, "SUCCESS", {});
       }
     ]
   };
