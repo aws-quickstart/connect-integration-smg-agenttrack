@@ -160,7 +160,9 @@
                                                 "Ref": "AWS::AccountId"
                                             },
                                             ":log-group:/aws/lambda/",
-                                            {"Ref": "SmgStackTestLambda"},
+                                            {
+                                                "Ref": "SmgStackTestLambda"
+                                            },
                                             ":*"
                                         ]
                                     ]
