@@ -1,5 +1,5 @@
-# connect-integration-voicebase
-## Amazon Connect Integration for VoiceFoundry Post-Call Survey, powered by SMG AgentTrack
+# connect-integration-smg-agenttrack
+## Amazon Connect Integration for VoiceFoundry Post-Call Surveys, powered by SMG AgentTrack
 
 This Quick Start integrates VoiceFoundry Post-Call Survey, powered by SMG AgentTrack, with Amazon Connect. The integration enables contact centers to easily implement and manage post-call surveys and submit them to SMG for aggregation, reporting, and center analysis. The integration deploys two AWS Lambda functions, an Amazon Kinesis stream, and Amazon API Gateway.
 
