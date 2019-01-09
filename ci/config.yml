@@ -1,6 +1,6 @@
 global:
   marketplace-ami: false
-  owner: support.voicefoundry.com
+  owner: support@voicefoundry.com
   qsname: connect-integration-smg-agenttrack
   regions:
     - us-east-1
