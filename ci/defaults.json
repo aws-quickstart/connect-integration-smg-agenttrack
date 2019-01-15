@@ -1,13 +1,10 @@
-[{
+[
+    {
         "ParameterKey": "AgentTrackApiKey",
-        "ParameterValue": "$[taskcat_genuuid]"
+        "ParameterValue": "$[alfred_genuuid]"
     },
     {
         "ParameterKey": "ConnectInstanceId",
-        "ParameterValue": "$[taskcat_genuuid]"
-    },
-    {
-        "ParameterKey": "FirehoseBucketName",
-        "ParameterValue": "lhsmgfirehosebucket"
+        "ParameterValue": "$[alfred_genuuid]"
     }
 ]
