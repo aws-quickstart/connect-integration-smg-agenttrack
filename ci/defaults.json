@@ -6,9 +6,5 @@
     {
         "ParameterKey": "ConnectInstanceId",
         "ParameterValue": "$[alfred_genuuid]"
-    },
-    {
-        "ParameterKey": "FirehoseBucketName",
-        "ParameterValue": "lhsmgfirehosebucket"
     }
 ]
