@@ -18,20 +18,56 @@
 		"AgentTrackApiKey": {
 			"AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
 			"Description": "SMG AgentTrack API Key. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+			"ConstraintDescription": "SMG Agent Track API key contains upper and lower case letters, numbers and dashes (-).",
 			"Type": "String"
 		},
 		"ConnectInstanceId": {
 			"AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
 			"Description": "ID of your Connect Instance. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+			"ConstraintDescription": "Amazon Connect Instance ID contains upper and lower case letters, numbers and dashes (-).",
 			"Type": "String"
 		},
 		"FirehoseBucketName": {
-			"AllowedPattern": "[a-z0-9]+",
+			"AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
 			"Description": "Name of the S3 Bucket where Firehose will PUT CTRs. Accepts Lower case letters, Numbers and Dashes.",
+			"ConstraintDescription": "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
 			"Type": "String"
 		}
 	},
+	"Rules": {
+		"RegionSupport": {
+			"Assertions": [{
+				"Assert": {
+					"Fn::Contains": [
+						[
+							"us-east-1"
+						],
+						{
+							"Ref": "AWS::Region"
+						}
+					]
+				},
+				"AssertDescription": "Supported regions: US East (N. Virginia) - us-east-1"
+			}]
+		}
+	},
 	"Resources": {
+		"InvokeIntegrationTestFunction": {
+			"Type": "Custom::InvokeIntegrationTestFunction",
+			"Version": "1.0",
+			"DependsOn": "SmgStackTestLambda",
+			"Properties": {
+				"apiKey": {
+					"Fn::Sub": "${AgentTrackApiKey}"
+				},
+				"connectInstanceId": {
+					"Fn::Sub": "${ConnectInstanceId}"
+				},
+				"ServiceToken": {
+					"Fn::GetAtt": "SmgStackTestLambda.Arn"
+				}
+			}
+		},
 		"SmgLambdaExecutionRole": {
 			"Type": "AWS::IAM::Role",
 			"Properties": {
@@ -71,9 +107,13 @@
 							"Resource": {
 								"Fn::Join": [
 									"",
-									["arn:aws:logs:us-east-1:", {
-										"Ref": "AWS::AccountId"
-									}, "*"]
+									[
+										"arn:aws:logs:us-east-1:",
+										{
+											"Ref": "AWS::AccountId"
+										},
+										"*"
+									]
 								]
 							}
 						},
@@ -86,25 +126,41 @@
 							"Resource": [{
 									"Fn::Join": [
 										"",
-										["arn:aws:logs:us-east-1:", {
-											"Ref": "AWS::AccountId"
-										}, ":log-group:/aws/lambda/SmgNextQuestionLambda:*"]
+										[
+											"arn:aws:logs:us-east-1:",
+											{
+												"Ref": "AWS::AccountId"
+											},
+											":log-group:/aws/lambda/SmgNextQuestionLambda:*"
+										]
 									]
 								},
 								{
 									"Fn::Join": [
 										"",
-										["arn:aws:logs:us-east-1:", {
-											"Ref": "AWS::AccountId"
-										}, ":log-group:/aws/lambda/SmgPushToSmgLambda:*"]
+										[
+											"arn:aws:logs:us-east-1:",
+											{
+												"Ref": "AWS::AccountId"
+											},
+											":log-group:/aws/lambda/SmgPushToSmgLambda:*"
+										]
 									]
 								},
 								{
 									"Fn::Join": [
 										"",
-										["arn:aws:logs:us-east-1:", {
-											"Ref": "AWS::AccountId"
-										}, ":log-group:/aws/lambda/SmgStackTestLambda:*"]
+										[
+											"arn:aws:logs:us-east-1:",
+											{
+												"Ref": "AWS::AccountId"
+											},
+											":log-group:/aws/lambda/",
+											{
+												"Ref": "SmgStackTestLambda"
+											},
+											":*"
+										]
 									]
 								}
 							]
@@ -113,23 +169,23 @@
 				}
 			}
 		},
+
 		"SmgPushToSmgLambda": {
 			"Type": "AWS::Lambda::Function",
 			"Properties": {
 				"Code": {
-					"S3Bucket": "smg-connect-surveys-lambdas-ocera",
-					"S3Key": "SmgPushToSmgLambda/lambda.zip"
+					"S3Bucket": "aws-quickstart",
+					"S3Key": "connect-integration-smg-agenttrack/functions/packages/SmgPushToSmgLambda/lambda.zip"
 				},
 				"Description": "Smg Push To Smg Lambda",
 				"Environment": {
 					"Variables": {
 						"SURVEY_URL": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/ProcessKinesisData",
 						"SURVEY_APIKEY": {
-							"Ref": "AgentTrackApiKey"
+							"Fn::Sub": "${AgentTrackApiKey}"
 						}
 					}
 				},
-				"FunctionName": "SmgPushToSmgLambda",
 				"Handler": "index.handler",
 				"MemorySize": 128,
 				"Role": {
@@ -139,15 +195,15 @@
 					]
 				},
 				"Timeout": 10,
-				"Runtime": "nodejs8.10"
+				"Runtime": "nodejs6.10"
 			}
 		},
 		"SmgNextQuestionLambda": {
 			"Type": "AWS::Lambda::Function",
 			"Properties": {
 				"Code": {
-					"S3Bucket": "smg-connect-surveys-lambdas-ocera",
-					"S3Key": "SmgNextQuestionLambda/lambda.zip"
+					"S3Bucket": "aws-quickstart",
+					"S3Key": "connect-integration-smg-agenttrack/functions/packages/SmgNextQuestionLambda/lambda.zip"
 				},
 				"Description": "Smg Next Survey Question Lambda",
 				"Environment": {
@@ -157,7 +213,6 @@
 						}
 					}
 				},
-				"FunctionName": "SmgNextQuestionLambda",
 				"Handler": "index.handler",
 				"MemorySize": 128,
 				"Role": {
@@ -307,32 +362,12 @@
 					]
 				},
 				"Code": {
-					"S3Bucket": "smg-connect-surveys-lambdas-ocera",
-					"S3Key": "integration-test/lambda.zip"
+					"S3Bucket": "aws-quickstart",
+					"S3Key": "connect-integration-smg-agenttrack/functions/packages/IntegrationTest/lambda.zip"
 				}
 			}
 		},
-		"SmgStackTestResource": {
-			"Type": "Custom::SmgStackTest",
-			"DependsOn": [
-				"SmgApiDeployment",
-				"SmgAPI"
-			],
-			"Properties": {
-				"ServiceToken": {
-					"Fn::Join": [
-						"",
-						["arn:aws:lambda:", {
-							"Ref": "AWS::Region"
-						}, ":", {
-							"Ref": "AWS::AccountId"
-						}, ":function:", {
-							"Ref": "SmgStackTestLambda"
-						}]
-					]
-				}
-			}
-		},
+
 		"KeepSmgPushToSmgLambdaWarmEventRule": {
 			"Type": "AWS::Events::Rule",
 			"Properties": {
@@ -380,11 +415,19 @@
 					"Ref": "AWS::AccountId"
 				},
 				"SourceArn": {
-					"Fn::Join": ["", ["arn:aws:connect:us-east-1:", {
-						"Ref": "AWS::AccountId"
-					}, ":instance/", {
-						"Ref": "ConnectInstanceId"
-					}]]
+					"Fn::Join": [
+						"",
+						[
+							"arn:aws:connect:us-east-1:",
+							{
+								"Ref": "AWS::AccountId"
+							},
+							":instance/",
+							{
+								"Ref": "ConnectInstanceId"
+							}
+						]
+					]
 				}
 			}
 		},
@@ -646,6 +689,56 @@
 						"Fn::GetAtt": ["SMGFirehoseAccessRole", "Arn"]
 					}
 				}
+			}
+		},
+		"SmgStackTestResource": {
+			"Type": "Custom::SmgStackTest",
+			"DependsOn": [
+				"SmgApiDeployment",
+				"SmgAPI"
+			],
+			"Properties": {
+				"ServiceToken": {
+					"Fn::Join": [
+						"",
+						["arn:aws:lambda:", {
+							"Ref": "AWS::Region"
+						}, ":", {
+							"Ref": "AWS::AccountId"
+						}, ":function:", {
+							"Ref": "SmgStackTestLambda"
+						}]
+					]
+				}
+			}
+		}
+	},
+	"Outputs": {
+		"SmgPushToSmgLambda": {
+			"Description": "The ARN of the SmgPushToSmgLambda Lambda",
+			"Value": {
+				"Fn::GetAtt": [
+					"SmgPushToSmgLambda",
+					"Arn"
+				]
+			}
+		},
+		"SmgNextQuestionLambda": {
+			"Description": "The ARN of the SmgNextQuestionLambda Lambda",
+			"Value": {
+				"Fn::GetAtt": [
+					"SmgNextQuestionLambda",
+					"Arn"
+				]
+			}
+		},
+		"SmgKinesisStream": {
+			"Description": "The ARN of the SMG Kinesis Stream",
+			"Value": {
+				"Fn::GetAtt": [
+					"SmgKinesisStream",
+					"Arn"
+				]
 			}
 		}
 	}
