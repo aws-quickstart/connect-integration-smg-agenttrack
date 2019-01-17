@@ -34,23 +34,6 @@
 			"Type": "String"
 		}
 	},
-	"Rules": {
-		"RegionSupport": {
-			"Assertions": [{
-				"Assert": {
-					"Fn::Contains": [
-						[
-							"us-east-1"
-						],
-						{
-							"Ref": "AWS::Region"
-						}
-					]
-				},
-				"AssertDescription": "Supported regions: US East (N. Virginia) - us-east-1"
-			}]
-		}
-	},
 	"Resources": {
 		"InvokeIntegrationTestFunction": {
 			"Type": "Custom::InvokeIntegrationTestFunction",
