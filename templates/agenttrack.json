@@ -1,11 +1,11 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "SMG AgentTrack Stack - Connect integration for Custom Agent/IVR Survey response analysis",
+	"Description": "AgentTrack Stack - Connect integration for Custom Agent/IVR Survey response analysis",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [{
 				"Label": {
-					"default": "SMG AgentTrack Parameters"
+					"default": "AgentTrack Parameters"
 				},
 				"Parameters": [
 					"AgentTrackApiKey",
@@ -24,8 +24,8 @@
 		"Parameters": {
 			"AgentTrackApiKey": {
 				"AllowedPattern": "[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}",
-				"Description": "SMG AgentTrack API Key. Contains Upper and Lower case letters, Numbers and Dashes (-).",
-				"ConstraintDescription": "SMG Agent Track API key contains upper and lower case letters, numbers and dashes (-).",
+				"Description": "AgentTrack API Key. Contains Upper and Lower case letters, Numbers and Dashes (-).",
+				"ConstraintDescription": "Agent Track API key contains upper and lower case letters, numbers and dashes (-).",
 				"Type": "String"
 			},
 			"ConnectInstanceId": {
