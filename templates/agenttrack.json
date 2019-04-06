@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "AgentTrack Stack - Connect integration for Custom Agent/IVR Survey response analysis",
+	"Description": "Post call surveys powered by SMG AgentTrack integration for Amazon Connect (qs-1ofbedn5m)",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [{
@@ -45,6 +45,23 @@
 			"Description": "Name of the S3 Bucket where Firehose will PUT CTRs. Accepts Lower case letters, Numbers and Dashes.",
 			"ConstraintDescription": "Bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
 			"Type": "String"
+		}
+	},
+	"Rules": {
+		"RegionSupport": {
+			"Assertions": [{
+				"Assert": {
+					"Fn::Contains": [
+						[
+							"us-east-1"
+						],
+						{
+							"Ref": "AWS::Region"
+						}
+					]
+				},
+				"AssertDescription": "Supported regions: US East (N. Virginia) - us-east-1"
+			}]
 		}
 	},
 	"Resources": {
@@ -108,7 +125,7 @@
 										{
 											"Ref": "AWS::AccountId"
 										},
-										"*"
+										":*"
 									]
 								]
 							}
@@ -127,8 +144,13 @@
 											{
 												"Ref": "AWS::AccountId"
 											},
-											":log-group:/aws/lambda/SmgNextQuestionLambda:*"
+											":log-group:/aws/lambda/",
+											{
+												"Ref": "SmgNextQuestionLambda"
+											},
+											":*"
 										]
+
 									]
 								},
 								{
@@ -139,8 +161,13 @@
 											{
 												"Ref": "AWS::AccountId"
 											},
-											":log-group:/aws/lambda/SmgPushToSmgLambda:*"
+											":log-group:/aws/lambda/",
+											{
+												"Ref": "SmgPushToSmgLambda"
+											},
+											":*"
 										]
+
 									]
 								},
 								{
@@ -221,134 +248,12 @@
 				"Runtime": "nodejs6.10"
 			}
 		},
-		"SmgAPI": {
-			"Type": "AWS::ApiGateway::RestApi",
-			"Properties": {
-				"Description": "SMG Lambda API",
-				"Name": "SmgAPI"
-			}
-		},
-		"SmgPushToSmgLambdaResource": {
-			"Type": "AWS::ApiGateway::Resource",
-			"Properties": {
-				"RestApiId": {
-					"Ref": "SmgAPI"
-				},
-				"ParentId": {
-					"Fn::GetAtt": [
-						"SmgAPI",
-						"RootResourceId"
-					]
-				},
-				"PathPart": "SmgPushToSmgLambda"
-			}
-		},
-		"SmgPushToSmgLambdaMethod": {
-			"Type": "AWS::ApiGateway::Method",
-			"Properties": {
-				"RestApiId": {
-					"Ref": "SmgAPI"
-				},
-				"ResourceId": {
-					"Ref": "SmgPushToSmgLambdaResource"
-				},
-				"HttpMethod": "POST",
-				"AuthorizationType": "NONE",
-				"Integration": {
-					"Type": "AWS_PROXY",
-					"IntegrationHttpMethod": "POST",
-					"Uri": {
-						"Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SmgPushToSmgLambda.Arn}/invocations"
-					}
-				}
-			}
-		},
-		"SmgNextQuestionLambdaResource": {
-			"Type": "AWS::ApiGateway::Resource",
-			"Properties": {
-				"RestApiId": {
-					"Ref": "SmgAPI"
-				},
-				"ParentId": {
-					"Fn::GetAtt": [
-						"SmgAPI",
-						"RootResourceId"
-					]
-				},
-				"PathPart": "SmgNextQuestionLambda"
-			}
-		},
-		"SmgNextQuestionLambdaMethod": {
-			"Type": "AWS::ApiGateway::Method",
-			"Properties": {
-				"RestApiId": {
-					"Ref": "SmgAPI"
-				},
-				"ResourceId": {
-					"Ref": "SmgNextQuestionLambdaResource"
-				},
-				"HttpMethod": "POST",
-				"AuthorizationType": "NONE",
-				"Integration": {
-					"Type": "AWS_PROXY",
-					"IntegrationHttpMethod": "POST",
-					"Uri": {
-						"Fn::Join": [
-							"",
-							["arn:aws:apigateway:", {
-								"Ref": "AWS::Region"
-							}, ":lambda:path/2015-03-31/functions/", {
-								"Fn::GetAtt": ["SmgNextQuestionLambda", "Arn"]
-							}, "/invocations"]
-						]
-					}
-				}
-			}
-		},
-		"SmgApiDeployment": {
-			"Type": "AWS::ApiGateway::Deployment",
-			"DependsOn": [
-				"SmgPushToSmgLambdaMethod",
-				"SmgNextQuestionLambdaMethod"
-			],
-			"Properties": {
-				"RestApiId": {
-					"Ref": "SmgAPI"
-				},
-				"Description": "SMG Lambda API Endpoints",
-				"StageName": "SmgStage"
-			}
-		},
 		"SmgStackTestLambda": {
 			"Type": "AWS::Lambda::Function",
-			"DependsOn": [
-				"SmgPushToSmgLambda",
-				"SmgNextQuestionLambda",
-				"SmgApiDeployment"
-			],
 			"Properties": {
-				"Handler": "test.quickstart",
+				"Handler": "index.quickstart",
 				"Runtime": "nodejs6.10",
-				"Description": "Checks for lambda deployment success",
-				"Environment": {
-					"Variables": {
-						"APIHOST": {
-							"Fn::Join": [
-								"",
-								[{
-										"Ref": "SmgAPI"
-									},
-									".execute-api.",
-									{
-										"Fn::Sub": "${AWS::Region}.amazonaws.com"
-									}
-								]
-							]
-						},
-						"NEXTQUESTION_PATH": "/SmgStage/SmgNextQuestionLambda",
-						"PUSHTOSMG_PATH": "/SmgStage/SmgPushToSmgLambda"
-					}
-				},
+				"Description": "SMG AgentTrack integration test",
 				"MemorySize": 128,
 				"Timeout": 30,
 				"Role": {
@@ -363,9 +268,9 @@
 				}
 			}
 		},
-
 		"KeepSmgPushToSmgLambdaWarmEventRule": {
 			"Type": "AWS::Events::Rule",
+			"DependsOn": "SmgPushToSmgLambda",
 			"Properties": {
 				"Description": "Keeps the lambdas warm by pinging them every (n)minutes.",
 				"ScheduleExpression": "rate(10 minutes)",
@@ -384,6 +289,7 @@
 		},
 		"KeepSmgNextQuestionLambdaWarmEventRule": {
 			"Type": "AWS::Events::Rule",
+			"DependsOn": "SmgNextQuestionLambda",
 			"Properties": {
 				"Description": "Keeps the lambdas warm by pinging them every (n)minutes.",
 				"ScheduleExpression": "rate(10 minutes)",
@@ -405,7 +311,9 @@
 			"DependsOn": "SmgNextQuestionLambda",
 			"Properties": {
 				"Action": "lambda:InvokeFunction",
-				"FunctionName": "function:SmgNextQuestionLambda",
+				"FunctionName": {
+					"Ref": "SmgNextQuestionLambda"
+				},
 				"Principal": "connect.amazonaws.com",
 				"SourceAccount": {
 					"Ref": "AWS::AccountId"
@@ -425,153 +333,6 @@
 						]
 					]
 				}
-			}
-		},
-		"PermissionForPushToSmgEventRuleToInvokeLambda": {
-			"Type": "AWS::Lambda::Permission",
-			"Properties": {
-				"FunctionName": {
-					"Ref": "SmgPushToSmgLambda"
-				},
-				"Action": "lambda:InvokeFunction",
-				"Principal": "events.amazonaws.com",
-				"SourceArn": {
-					"Fn::GetAtt": [
-						"KeepSmgPushToSmgLambdaWarmEventRule",
-						"Arn"
-					]
-				}
-			}
-		},
-		"PermissionForNextQuestionEventRuleToInvokeLambda": {
-			"Type": "AWS::Lambda::Permission",
-			"Properties": {
-				"FunctionName": {
-					"Ref": "SmgNextQuestionLambda"
-				},
-				"Action": "lambda:InvokeFunction",
-				"Principal": "events.amazonaws.com",
-				"SourceArn": {
-					"Fn::GetAtt": [
-						"KeepSmgNextQuestionLambdaWarmEventRule",
-						"Arn"
-					]
-				}
-			}
-		},
-		"SmgPushToSmgLambdaApiPermission": {
-			"Type": "AWS::Lambda::Permission",
-			"Properties": {
-				"FunctionName": {
-					"Fn::GetAtt": [
-						"SmgPushToSmgLambda",
-						"Arn"
-					]
-				},
-				"Action": "lambda:InvokeFunction",
-				"Principal": "apigateway.amazonaws.com",
-				"SourceArn": {
-					"Fn::Join": [
-						"",
-						["arn:aws:execute-api:", {
-							"Ref": "AWS::Region"
-						}, ":", {
-							"Ref": "AWS::AccountId"
-						}, ":", {
-							"Ref": "SmgAPI"
-						}, "/*"]
-					]
-				}
-			}
-		},
-		"SmgNextQuestionLambdaApiPermission": {
-			"Type": "AWS::Lambda::Permission",
-			"Properties": {
-				"FunctionName": {
-					"Fn::GetAtt": [
-						"SmgNextQuestionLambda",
-						"Arn"
-					]
-				},
-				"Action": "lambda:InvokeFunction",
-				"Principal": "apigateway.amazonaws.com",
-				"SourceArn": {
-					"Fn::Join": [
-						"",
-						["arn:aws:execute-api:", {
-							"Ref": "AWS::Region"
-						}, ":", {
-							"Ref": "AWS::AccountId"
-						}, ":", {
-							"Ref": "SmgAPI"
-						}, "/*"]
-					]
-				}
-			}
-		},
-		"LambdaExecutionRole": {
-			"Type": "AWS::IAM::Role",
-			"Properties": {
-				"AssumeRolePolicyDocument": {
-					"Version": "2012-10-17",
-					"Statement": [{
-						"Effect": "Allow",
-						"Principal": {
-							"Service": [
-								"lambda.amazonaws.com"
-							]
-						},
-						"Action": [
-							"sts:AssumeRole"
-						]
-					}]
-				},
-				"Path": "/",
-				"Policies": [{
-					"PolicyName": "lambdalogtocloudwatch",
-					"PolicyDocument": {
-						"Version": "2012-10-17",
-						"Statement": [{
-							"Effect": "Allow",
-							"Action": [
-								"logs:CreateLogGroup",
-								"logs:CreateLogStream",
-								"logs:PutLogEvents"
-							],
-							"Resource": "arn:aws:logs:*:*:*"
-						}]
-					}
-				}]
-			}
-		},
-		"LambdaS3ReadPolicy": {
-			"Type": "AWS::IAM::Policy",
-			"Properties": {
-				"PolicyName": "lambda-s3-read-only",
-				"PolicyDocument": {
-					"Version": "2012-10-17",
-					"Statement": [{
-						"Effect": "Allow",
-						"Action": [
-							"s3:GetObject",
-							"s3:ListBucket"
-						],
-						"Resource": [{
-								"Fn::Join": ["", ["arn:aws:s3:::", {
-									"Ref": "FirehoseBucketName"
-								}]]
-							},
-							{
-								"Fn::Join": ["", ["arn:aws:s3:::", {
-									"Ref": "FirehoseBucketName"
-								}, "*"]]
-							}
-						]
-					}]
-				},
-				"Roles": [{
-					"Ref": "SmgLambdaExecutionRole"
-				}]
 			}
 		},
 		"BucketInvokePolicy": {
@@ -604,7 +365,7 @@
 				},
 				"NotificationConfiguration": {
 					"LambdaConfigurations": [{
-						"Event": "s3:ObjectCreated:Put",
+						"Event": "s3:ObjectCreated:*",
 						"Function": {
 							"Fn::GetAtt": ["SmgPushToSmgLambda", "Arn"]
 						}
@@ -687,25 +448,34 @@
 				}
 			}
 		},
-		"SmgStackTestResource": {
-			"Type": "Custom::SmgStackTest",
-			"DependsOn": [
-				"SmgApiDeployment",
-				"SmgAPI"
-			],
+		"LambdaS3ReadPolicy": {
+			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"ServiceToken": {
-					"Fn::Join": [
-						"",
-						["arn:aws:lambda:", {
-							"Ref": "AWS::Region"
-						}, ":", {
-							"Ref": "AWS::AccountId"
-						}, ":function:", {
-							"Ref": "SmgStackTestLambda"
-						}]
-					]
-				}
+				"PolicyName": "lambda-s3-read-only",
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Action": [
+							"s3:GetObject",
+							"s3:ListBucket"
+						],
+						"Resource": [{
+								"Fn::Join": ["", ["arn:aws:s3:::", {
+									"Ref": "FirehoseBucketName"
+								}]]
+							},
+							{
+								"Fn::Join": ["", ["arn:aws:s3:::", {
+									"Ref": "FirehoseBucketName"
+								}, "*"]]
+							}
+						]
+					}]
+				},
+				"Roles": [{
+					"Ref": "SmgLambdaExecutionRole"
+				}]
 			}
 		}
 	},
