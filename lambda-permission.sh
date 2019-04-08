@@ -1,2 +1,0 @@
-#!/bin/sh
-aws lambda add-permission --function-name function:SmgNextQuestionLambda --statement-id connect-lambda-mikeh --principal connect.amazonaws.com --action lambda:InvokeFunction --source-account 772124071258 --source-arn arn:aws:connect:us-east-1:772124071258:instance/289d4217-f160-4c0c-bfe8-17b80d5eb2ce
