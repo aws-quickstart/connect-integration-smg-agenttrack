@@ -4,7 +4,7 @@
 
 This integration enables the SaaS AWS Marketplace listing entitled *VoiceFoundry Post-call Surveys powered by SMG AgentTrack*, which allows Contact Centers to easily implement and manage post-call surveys that are submitted to SMG for aggregation, reporting, and center analysis. The integration deploys two Lambda functions and sets up a trigger for when your Amazon Connect contact trace records are added to a specified S3 bucket.
 
-![Architecture for SMG AgentTrack integration](https://d0.awsstatic.com/partner-network/QuickStart/connect/connect-integration-smg-agenttrack-architecture.png)
+![Architecture for SMG AgentTrack integration](/smg_agenttrack_arch_v4.jpg)
 
 *VoiceFoundry Post-call Surveys powered by SMG AgentTrack* was developed in concert with SMG (Service Management Group), the leader in customer service management measurement. SMG combines technology and insights that keep you informed and advance your brand for the next level of customer and employee loyalty. SMG connects the links between employee engagement, customer satisfaction and financial performance. All surveys submitted through the application are provided to SMG to give you advanced insight to your agent’s customer service performance and effectiveness.
 
