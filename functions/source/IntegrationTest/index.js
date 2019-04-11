@@ -47,7 +47,7 @@ var send = function (event, context, responseStatus, responseData, physicalResou
 
 function getIntegrationTestUrl(apiKey, connectInstanceId) {
   return {
-    host: "connect-api.smg.com",
+    host: "smg-s-loadb-1w7j39tp4hc51-1561128529.us-east-1.elb.amazonaws.com",
     path: "/LambdaAccess/IntegrationTest/" + apiKey + "/" + connectInstanceId
   };
 }

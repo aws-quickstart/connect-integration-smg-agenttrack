@@ -69,7 +69,7 @@ function getNextQuestion(config){
 }
 
 
-//https://connect-api.smg.com/LambdaAccess/NextQuestion/71f1250b-3221-11e9-9926-54e1addfa841/SURVEYPROGRESS/CURRENTANSWER/PQUESTIONPREFIXTYPE
+//https://smg-s-loadb-1w7j39tp4hc51-1561128529.us-east-1.elb.amazonaws.com/LambdaAccess/NextQuestion/71f1250b-3221-11e9-9926-54e1addfa841/SURVEYPROGRESS/CURRENTANSWER/PQUESTIONPREFIXTYPE
 function getHost(url){
     var a = url.split("/");
     return  a[2];
