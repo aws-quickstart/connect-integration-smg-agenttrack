@@ -1,7 +1,5 @@
 var https = require('https');
-var querystring = require('querystring');
 var url = require('url');
-
 
 class s3Handler {
     get(key, bucketName) {
@@ -42,50 +40,52 @@ exports.handler = (event, context, callback) => {
     });
     Promise.all(promises).then(x => callback(null, null)).catch(x => callback(x));
 };
+
 const sendData = (data) => {
     return new Promise((resolve, reject) => {
 
-        var encodedData = encodeURIComponent(data);
         var parsedUrl = url.parse(process.env.SURVEY_URL);
-        var params = {
-            MessageBody: data,
-            PostHost: parsedUrl.hostname,
-            PostPath: parsedUrl.path + "/" + encodedData + "/" + process.env.SURVEY_APIKEY,
-            ApiKey: process.env.SURVEY_APIKEY
-        };
 
         var post_options = {
-            host: params.PostHost,
-            path: params.PostPath,
+            host: parsedUrl.hostname,
+            path: parsedUrl.path,
             port: 443,
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': data.length
+            }
         };
-        var post_req = https.request(post_options, function (res) {
-                console.log('statusCode:', res.statusCode);
-                console.log('headers:', res.headers);
-            
-                if (res.statusCode == 200) {
-                    console.log("Successful request");
-                } else {
-                    console.log(res.statusCode);
-                }
 
-            
+        var post_req = https.request(post_options, function (res) {
+            console.log('statusCode:', res.statusCode);
+            console.log('headers:', res.headers);
+
+            if (res.statusCode == 200) {
+                console.log("Successful request");
+            } else {
+                console.log(res.statusCode);
+            }
+
             res.setEncoding('utf8');
+
             res.on('data', function (chunk) {
                 console.log("send succeeded:" + chunk.toString());
                 resolve(null);
             });
+
             res.on('end', function (chunk) {
                 console.log("send succeeded");
                 resolve(null);
             });
         });
+
         post_req.on('error', (err) => {
             console.log(err);
             reject(err);
         });
 
+        post_req.write(data);
 
         post_req.end();
     });
