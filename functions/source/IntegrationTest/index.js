@@ -1,7 +1,10 @@
 var https = require('https');
+
 var send = function (event, context, responseStatus, responseData, physicalResourceId) {
 
-  if (!event.StackId) return;
+  if (!event.StackId){
+    return;
+  }
 
   var responseBody = JSON.stringify({
     Status: responseStatus,
@@ -44,24 +47,19 @@ var send = function (event, context, responseStatus, responseData, physicalResou
   request.end();
 };
 
-
-function getIntegrationTestUrl(apiKey, connectInstanceId) {
-  return {
-    host: "connect-api.smg.com",
-    path: "/LambdaAccess/IntegrationTest/" + apiKey + "/" + connectInstanceId
-  };
-}
-
-
 exports.quickstart = function (event, context) {
   console.log(JSON.stringify(event));
-  var testUrl = getIntegrationTestUrl(event.ResourceProperties.apiKey, event.ResourceProperties.connectInstanceId);
+
   var state = {
     event,
     context,
-    testUrl: testUrl,
+    dto: {
+      apiToken: event.ResourceProperties.apiKey,
+      connectInstanceId: event.ResourceProperties.connectInstanceId
+    }
   };
   //console.log(JSON.stringify(state));
+  
   getData(state);
 };
 
@@ -72,13 +70,19 @@ function fail(state) {
 
 function getData(state) {
   try {
+
+    var dto = JSON.stringify(state.dto);
+
     const options = {
-      hostname: state.testUrl.host,
+      hostname: 'connect-api.smg.com',
+      path: '/LambdaAccess/v2/IntegrationTest',
       port: 443,
-      path: state.testUrl.path,
-      method: 'POST'
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': dto.length
+      }
     };
-    console.log(JSON.stringify(state.testUrl));
 
     const req = https.request(options, (res) => {
       console.log('statusCode:', res.statusCode);
@@ -99,24 +103,12 @@ function getData(state) {
         SMG: e
       });
     });
-    req.end();
 
+    post_req.write(dto);
+    req.end();
 
   } catch (e) {
     console.log("GetData Failed: " + e.message);
     fail(state);
   }
 }
-
-/*
-
-{
-  "StackId": "123",
-  "ResponseURL": "https://google.com",
-  "ResourceProperties": {
-    "apiKey": "71f1250b-3221-11e9-9926-54e1addfa841",
-    "connectInstanceId": "274e7b6f-ab23-4bc9-8e27-2253914f74b0"
-  }
-}
-
-*/
