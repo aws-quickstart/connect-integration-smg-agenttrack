@@ -197,13 +197,13 @@
 			"Type": "AWS::Lambda::Function",
 			"Properties": {
 				"Code": {
-					"S3Bucket": "aws-quickstart",
+					"S3Bucket": "tom.huguenard",
 					"S3Key": "connect-integration-smg-agenttrack/functions/packages/SmgPushToSmgLambda/lambda.zip"
 				},
 				"Description": "Smg Push To Smg Lambda",
 				"Environment": {
 					"Variables": {
-						"SURVEY_URL": "https://smg-s-loadb-1w7j39tp4hc51-1561128529.us-east-1.elb.amazonaws.com/LambdaAccess/ProcessKinesisData",
+						"SURVEY_URL": "https://connect-api.smg.com/LambdaAccess/ProcessKinesisData",
 						"SURVEY_APIKEY": {
 							"Fn::Sub": "${AgentTrackApiKey}"
 						}
@@ -225,14 +225,14 @@
 			"Type": "AWS::Lambda::Function",
 			"Properties": {
 				"Code": {
-					"S3Bucket": "aws-quickstart",
+					"S3Bucket": "tom.huguenard",
 					"S3Key": "connect-integration-smg-agenttrack/functions/packages/SmgNextQuestionLambda/lambda.zip"
 				},
 				"Description": "Smg Next Survey Question Lambda",
 				"Environment": {
 					"Variables": {
 						"SURVEY_URL": {
-							"Fn::Sub": "https://smg-s-loadb-1w7j39tp4hc51-1561128529.us-east-1.elb.amazonaws.com/LambdaAccess/NextQuestion/${AgentTrackApiKey}/SURVEYPROGRESS/CURRENTANSWER/PQUESTIONPREFIXTYPE"
+							"Fn::Sub": "https://connect-api.smg.com/LambdaAccess/NextQuestion/${AgentTrackApiKey}/SURVEYPROGRESS/CURRENTANSWER/PQUESTIONPREFIXTYPE"
 						}
 					}
 				},
@@ -263,7 +263,7 @@
 					]
 				},
 				"Code": {
-					"S3Bucket": "aws-quickstart",
+					"S3Bucket": "tom.huguenard",
 					"S3Key": "connect-integration-smg-agenttrack/functions/packages/IntegrationTest/lambda.zip"
 				}
 			}
