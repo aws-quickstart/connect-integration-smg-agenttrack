@@ -4,6 +4,7 @@ process.env.API_HOST='smg-s-loadb-1w7j39tp4hc51-1561128529.us-east-1.elb.amazona
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 function test(){
+    console.log('Validate that we can post data to integration test endpoint');
     var state = {
         event: {},
         context: {},

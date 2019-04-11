@@ -58,7 +58,7 @@ exports.handler = (event, context, callback) => {
         config.callback(null, JSON.parse(config.response));
         config.context.succeed();
     } else {
-        getData(config);
+        sendData(config);
     }
 };
 
@@ -72,13 +72,14 @@ function updateSurveyProgress(questionId, questionText, answerInput, progressObj
 }
 
 
-function getData(config) {
+exports.sendData = (config) => {
 
     var dto = JSON.stringify({
         apiKey: process.env.API_KEY,
         surveyProgress: config.surveyProgress,
         currentAnswer: config.currentAnswer,
-        previousQuestionPrefixType : config.previousQuestionPrefixType
+        previousQuestionPrefixType : config.previousQuestionPrefixType,
+        surveyDetail: ''
     });
     
     try {
@@ -94,20 +95,23 @@ function getData(config) {
         };
 
         console.log(JSON.stringify(options));
+        console.log(dto);
 
         const req = https.request(options, (res) => {
-            res.on('data', function (chunk) {
-                console.log('Response: ' + chunk);
-                config.callback(null, JSON.parse(chunk.toString()));
+            console.log('statusCode:', res.statusCode);
+
+            res.on('data', (d) => {
+                console.log('Response: ' + d.toString());
+                config.callback(null, JSON.parse(d.toString()));
             });
         });
 
         req.on('error', (e) => {
-            console.error(e);
+            console.error('error:', e);
             config.callback(e);
         });
 
-        post_req.write(dto);
+        req.write(dto);
         req.end();
 
     } catch (e) {
