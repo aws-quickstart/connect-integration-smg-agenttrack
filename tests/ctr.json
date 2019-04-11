@@ -1,0 +1,46 @@
+{
+    "AWSAccountId": "847765041971",
+    "AWSContactTraceRecordFormatVersion": "2017-03-10",
+    "Agent": null,
+    "AgentConnectionAttempts": 0,
+    "Attributes": {
+      "MaxQuestionRetries": "3",
+      "PreviousQuestionPrefixType": "1|SatAgentKnowledge",
+      "PreviousResponse": "",
+      "QuestionCount": "",
+      "QuestionTimestamp": "",
+      "SurveyProgress": "Timeout_SatAgentInteraction|2_SatAgentFriendliness|",
+      "SurveyProgressDetail": "[{\"QuestionPrefixType\":\"1|SatAgentKnowledge\",\"QuestionText\":\"The knowledge your agent demonstrated today.\",\"AnswerInput\":\"\"}]",
+      "TimeBeforeAnswer": "3000",
+      "ValidResponseValues": ""
+    },
+    "Channel": "VOICE",
+    "ConnectedToSystemTimestamp": "2019-04-10T23:02:25Z",
+    "ContactId": "08ce9577-8f42-4bed-9cee-a0a14b574966",
+    "CustomerEndpoint": {
+      "Address": " 19182690528",
+      "Type": "TELEPHONE_NUMBER"
+    },
+    "DisconnectTimestamp": "2019-04-10T23:03:01Z",
+    "InitialContactId": null,
+    "InitiationMethod": "INBOUND",
+    "InitiationTimestamp": "2019-04-10T23:02:25Z",
+    "InstanceARN": "arn:aws:connect:us-east-1:847765041971:instance\\2fee1c1f-9d48-42f9-99ee-d129e70dd33f",
+    "LastUpdateTimestamp": "2019-04-10T23:04:07Z",
+    "MediaStreams": [
+      {
+        "Type": "AUDIO"
+      }
+    ],
+    "NextContactId": null,
+    "PreviousContactId": null,
+    "Queue": null,
+    "Recording": null,
+    "Recordings": null,
+    "SystemEndpoint": {
+      "Address": " 19293885349",
+      "Type": "TELEPHONE_NUMBER"
+    },
+    "TransferCompletedTimestamp": null,
+    "TransferredToEndpoint": null
+  }

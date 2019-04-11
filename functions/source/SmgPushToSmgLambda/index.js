@@ -41,7 +41,7 @@ exports.handler = (event, context, callback) => {
     Promise.all(promises).then(x => callback(null, null)).catch(x => callback(x));
 };
 
-const sendData = (data) => {
+exports.sendData = (data) => {
     return new Promise((resolve, reject) => {
 
         var dto = JSON.stringify({
