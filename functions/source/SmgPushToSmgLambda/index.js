@@ -44,16 +44,21 @@ exports.handler = (event, context, callback) => {
 const sendData = (data) => {
     return new Promise((resolve, reject) => {
 
-        var parsedUrl = url.parse(process.env.SURVEY_URL);
+        var dto = JSON.stringify({
+            apiKey: process.env.API_KEY,
+            record: data
+        });
+
+        var parsedUrl = url.parse(process.env.API_URL);
 
         var post_options = {
             host: parsedUrl.hostname,
-            path: parsedUrl.path,
+            path: '/LambdaAccess/v2/ProcessCtr',
             port: 443,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': data.length
+                'Content-Length': dto.length
             }
         };
 
@@ -85,7 +90,7 @@ const sendData = (data) => {
             reject(err);
         });
 
-        post_req.write(data);
+        post_req.write(dto);
 
         post_req.end();
     });
