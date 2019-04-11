@@ -30,7 +30,7 @@ exports.handler = (event, context, callback) => {
         context.succeed();
         return;
     }
-
+    console.log(JSON.stringify(event));
     const promises = [];
     const s3 = new s3Handler();
 
@@ -45,44 +45,48 @@ exports.handler = (event, context, callback) => {
 const sendData = (data) => {
     return new Promise((resolve, reject) => {
 
+        var encodedData = encodeURIComponent(data);
         var parsedUrl = url.parse(process.env.SURVEY_URL);
-
         var params = {
             MessageBody: data,
             PostHost: parsedUrl.hostname,
-            PostPath: parsedUrl.path,
+            PostPath: parsedUrl.path + "/" + encodedData + "/" + process.env.SURVEY_APIKEY,
             ApiKey: process.env.SURVEY_APIKEY
         };
-        var post_data = querystring.stringify({
-            message: params.MessageBody,
-            apiToken: params.ApiKey
-        });
+
         var post_options = {
             host: params.PostHost,
             path: params.PostPath,
             port: 443,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(post_data)
-            }
+            method: 'POST'
         };
         var post_req = https.request(post_options, function (res) {
+                console.log('statusCode:', res.statusCode);
+                console.log('headers:', res.headers);
+            
+                if (res.statusCode == 200) {
+                    console.log("Successful request");
+                } else {
+                    console.log(res.statusCode);
+                }
+
+            
             res.setEncoding('utf8');
             res.on('data', function (chunk) {
-                console.log("send succeeded");
+                console.log("send succeeded:" + chunk.toString());
                 resolve(null);
             });
             res.on('end', function (chunk) {
                 console.log("send succeeded");
                 resolve(null);
             });
-        }).on('error', (err) => {
+        });
+        post_req.on('error', (err) => {
             console.log(err);
             reject(err);
         });
 
-        post_req.write(post_data);
+
         post_req.end();
     });
 };

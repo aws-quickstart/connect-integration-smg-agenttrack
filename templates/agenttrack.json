@@ -203,7 +203,7 @@
 				"Description": "Smg Push To Smg Lambda",
 				"Environment": {
 					"Variables": {
-						"SURVEY_URL": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/ProcessKinesisData",
+						"SURVEY_URL": "https://connect-api.smg.com/LambdaAccess/ProcessKinesisData",
 						"SURVEY_APIKEY": {
 							"Fn::Sub": "${AgentTrackApiKey}"
 						}
@@ -232,7 +232,7 @@
 				"Environment": {
 					"Variables": {
 						"SURVEY_URL": {
-							"Fn::Sub": "https://connect.smg.com/ConnectSurveysAPI/LambdaAccess/NextQuestion?apiKey=${AgentTrackApiKey}&surveyProgress=SURVEYPROGRESS&currentAnswer=CURRENTANSWER&previousQuestionPrefixType=PQUESTIONPREFIXTYPE"
+							"Fn::Sub": "https://connect-api.smg.com/LambdaAccess/NextQuestion/${AgentTrackApiKey}/SURVEYPROGRESS/CURRENTANSWER/PQUESTIONPREFIXTYPE"
 						}
 					}
 				},
