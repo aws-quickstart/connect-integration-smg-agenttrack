@@ -1,5 +1,4 @@
 var https = require('https');
-var url = require('url');
 
 class s3Handler {
     get(key, bucketName) {

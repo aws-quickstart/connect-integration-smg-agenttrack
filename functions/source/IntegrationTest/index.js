@@ -1,7 +1,5 @@
 var https = require('https');
 
-
-
 var send = function (event, context, responseStatus, responseData, physicalResourceId) {
 
   if (!event.StackId){
