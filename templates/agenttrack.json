@@ -203,9 +203,7 @@
 				"Description": "Smg Push To Smg Lambda",
 				"Environment": {
 					"Variables": {
-						"API_HOST": {
-							"Fn::Sub": "connect-api.smg.com"
-						},
+						"API_HOST": "connect-api.smg.com",
 						"API_KEY": {
 							"Fn::Sub": "${AgentTrackApiKey}"
 						}
@@ -233,9 +231,7 @@
 				"Description": "Smg Next Survey Question Lambda",
 				"Environment": {
 					"Variables": {
-						"API_HOST": {
-							"Fn::Sub": "connect-api.smg.com"
-						},
+						"API_HOST": "connect-api.smg.com",
 						"API_KEY": {
 							"Fn::Sub": "${AgentTrackApiKey}"
 						}
@@ -259,6 +255,11 @@
 				"Handler": "index.quickstart",
 				"Runtime": "nodejs6.10",
 				"Description": "SMG AgentTrack integration test",
+				"Environment": {
+					"Variables": {
+						"API_HOST": "connect-api.smg.com"
+					}
+				},
 				"MemorySize": 128,
 				"Timeout": 30,
 				"Role": {

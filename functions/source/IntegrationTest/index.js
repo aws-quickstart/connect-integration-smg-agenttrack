@@ -1,5 +1,7 @@
 var https = require('https');
 
+
+
 var send = function (event, context, responseStatus, responseData, physicalResourceId) {
 
   if (!event.StackId){
@@ -68,13 +70,13 @@ function fail(state) {
   send(state.event, state.context, "FAILED", {});
 }
 
-function getData(state) {
+exports.getData = function (state) {
   try {
 
     var dto = JSON.stringify(state.dto);
 
     const options = {
-      hostname: 'connect-api.smg.com',
+      hostname: process.env.API_HOST,
       path: '/LambdaAccess/v2/IntegrationTest',
       port: 443,
       method: 'POST',
@@ -95,6 +97,11 @@ function getData(state) {
           code: res.statusCode
         });
       }
+
+      res.on('data', (d) => {
+        // Will only display data if error code = 400
+        console.log(d.toString());
+      })
     });
 
     req.on('error', (e) => {
@@ -104,7 +111,7 @@ function getData(state) {
       });
     });
 
-    post_req.write(dto);
+    req.write(dto);
     req.end();
 
   } catch (e) {
