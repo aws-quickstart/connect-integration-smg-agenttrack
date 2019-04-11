@@ -49,10 +49,8 @@ const sendData = (data) => {
             record: data
         });
 
-        var parsedUrl = url.parse(process.env.API_URL);
-
         var post_options = {
-            host: parsedUrl.hostname,
+            host: process.env.API_HOST,
             path: '/LambdaAccess/v2/ProcessCtr',
             port: 443,
             method: 'POST',
