@@ -1,10 +1,7 @@
 var https = require('https');
-
 var send = function (event, context, responseStatus, responseData, physicalResourceId) {
 
-  if (!event.StackId){
-    return;
-  }
+  if (!event.StackId) return;
 
   var responseBody = JSON.stringify({
     Status: responseStatus,
@@ -47,19 +44,24 @@ var send = function (event, context, responseStatus, responseData, physicalResou
   request.end();
 };
 
+
+function getIntegrationTestUrl(apiKey, connectInstanceId) {
+  return {
+    host: "connect-api.smg.com",
+    path: "/LambdaAccess/IntegrationTest/" + apiKey + "/" + connectInstanceId
+  };
+}
+
+
 exports.quickstart = function (event, context) {
   console.log(JSON.stringify(event));
-
+  var testUrl = getIntegrationTestUrl(event.ResourceProperties.apiKey, event.ResourceProperties.connectInstanceId);
   var state = {
     event,
     context,
-    dto: {
-      apiToken: event.ResourceProperties.apiKey,
-      connectInstanceId: event.ResourceProperties.connectInstanceId
-    }
+    testUrl: testUrl,
   };
   //console.log(JSON.stringify(state));
-  
   getData(state);
 };
 
@@ -68,24 +70,15 @@ function fail(state) {
   send(state.event, state.context, "FAILED", {});
 }
 
-exports.getData = function (state) {
+function getData(state) {
   try {
-
-    var dto = JSON.stringify(state.dto);
-
     const options = {
-      hostname: process.env.API_HOST,
-      path: '/LambdaAccess/v2/IntegrationTest',
+      hostname: state.testUrl.host,
       port: 443,
-      method: 'POST',
-      rejectUnauthorized: false,
-      requestCert: true,
-      agent: false,
-      headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': dto.length
-      }
+      path: state.testUrl.path,
+      method: 'POST'
     };
+    console.log(JSON.stringify(state.testUrl));
 
     const req = https.request(options, (res) => {
       console.log('statusCode:', res.statusCode);
@@ -98,11 +91,6 @@ exports.getData = function (state) {
           code: res.statusCode
         });
       }
-
-      res.on('data', (d) => {
-        // Will only display data if error code = 400
-        console.log(d.toString());
-      })
     });
 
     req.on('error', (e) => {
@@ -111,12 +99,12 @@ exports.getData = function (state) {
         SMG: e
       });
     });
-
-    req.write(dto);
     req.end();
+
 
   } catch (e) {
     console.log("GetData Failed: " + e.message);
     fail(state);
   }
 }
+

@@ -58,7 +58,7 @@ exports.handler = (event, context, callback) => {
         config.callback(null, JSON.parse(config.response));
         config.context.succeed();
     } else {
-        sendData(config);
+        exports.sendData(config);
     }
 };
 

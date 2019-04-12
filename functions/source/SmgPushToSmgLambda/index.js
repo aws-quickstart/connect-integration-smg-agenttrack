@@ -34,7 +34,7 @@ exports.handler = (event, context, callback) => {
     event.Records.forEach(record => {
         const call = s3
             .get(record.s3.object.key, record.s3.bucket.name)
-            .then(data => sendData(data));
+            .then(exports.sendData);
         promises.push(call);
     });
     Promise.all(promises).then(x => callback(null, null)).catch(x => callback(x));
@@ -47,7 +47,6 @@ exports.sendData = (data) => {
             apiKey: process.env.API_KEY,
             record: data
         });
-
         var post_options = {
             host: process.env.API_HOST,
             path: '/LambdaAccess/v2/ProcessCtr',
