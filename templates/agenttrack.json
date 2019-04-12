@@ -68,6 +68,22 @@
 	  }
 	},
 	"Resources": {
+    "InvokeIntegrationTestFunction": {
+        "Type": "Custom::InvokeIntegrationTestFunction",
+		"Version": "1.0",
+		"DependsOn": "SmgStackTestLambda",
+		"Properties": {
+			"apiKey": {
+				"Fn::Sub": "${AgentTrackApiKey}"
+			},
+			"connectInstanceId": {
+				"Fn::Sub": "${ConnectInstanceId}"
+			},
+			"ServiceToken": {
+				"Fn::GetAtt": "SmgStackTestLambda.Arn"
+			}
+		}
+	  },
 	  "SmgLambdaExecutionRole": {
 		"Type": "AWS::IAM::Role",
 		"Properties": {
