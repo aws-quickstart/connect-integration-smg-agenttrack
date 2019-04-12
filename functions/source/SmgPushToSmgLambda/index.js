@@ -53,6 +53,9 @@ exports.sendData = (data) => {
             path: '/LambdaAccess/v2/ProcessCtr',
             port: 443,
             method: 'POST',
+            rejectUnauthorized: false,
+            requestCert: true,
+            agent: false,
             headers: {
                 'Content-Type': 'application/json',
                 'Content-Length': dto.length
