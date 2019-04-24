@@ -1,141 +1,93 @@
-"use strict";
-
-const https = require("https");
+var https = require('https');
 
 exports.handler = (event, context, callback) => {
-  const config = {};
+    var config = {};
+    var bad = false;
+    var failEvent = JSON.stringify(event);
 
-  if (event.keepwarm) {
-    callback(null, "kept warm");
-    context.succeed();
-    return;
-  }
-
-  if (event.body !== undefined) {
-    const bodyObj = JSON.parse(event.body);
-    event.Details = bodyObj.Details;
-  }
-
-  const answerQuestionDiff =
-    Date.now() - parseInt(event.Details.Parameters.QuestionTimestamp);
-  config.currentAnswer = event.Details.Parameters.CurrentAnswer;
-  config.surveyProgress = event.Details.Parameters.SurveyProgress;
-  config.previousQuestionPrefixType =
-    event.Details.Parameters.PreviousQuestionPrefixType;
-  config.previousResponse = event.Details.Parameters.PreviousResponse;
-  config.questionCount = parseInt(event.Details.Parameters.QuestionCount) + 1;
-  config.validResponseValues = event.Details.Parameters.ValidResponseValues;
-  config.maxQuestionRetries = parseInt(
-    event.Details.Parameters.MaxQuestionRetries
-  );
-  config.timeBeforeAnswer = parseInt(event.Details.Parameters.TimeBeforeAnswer);
-  config.surveyProgressDetail = JSON.parse(
-    event.Details.Parameters.SurveyProgressDetail
-  );
-
-  if (!config.currentAnswer) config.currentAnswer = "";
-
-  config.callback = callback;
-  config.context = context;
-
-  if (
-    (config.validResponseValues.indexOf(config.currentAnswer) === -1 &&
-      config.questionCount < config.maxQuestionRetries) ||
-    (answerQuestionDiff < config.timeBeforeAnswer &&
-      config.questionCount < config.maxQuestionRetries)
-  ) {
-    config.response = JSON.parse(config.previousResponse);
-    config.response.questionCount = config.questionCount;
-    config.response.previousResponse = config.previousResponse;
-    config.response.questionTimestamp = Date.now();
-    config.response.questionTimestamp += config.timeBeforeAnswer * 2;
-    config.response.wrongAnswer = true;
-    config.surveyProgressDetail.splice(-1, 1);
-
-    updateSurveyProgress(
-      1,
-      config.response.nextQuestion,
-      config.currentAnswer,
-      config.surveyProgressDetail
-    );
-
-    if (
-      config.currentAnswer === "Timeout" ||
-      answerQuestionDiff < config.timeBeforeAnswer
-    ) {
-      config.response.wrongAnswer = false;
-      config.response.questionTimestamp -= config.timeBeforeAnswer * 2;
+    if (event.keepwarm) {
+        callback(null, 'kept warm');
+        context.succeed();
+        return;
     }
 
-    config.response.surveyProgressDetail = JSON.stringify(
-      config.surveyProgressDetail
-    );
+    console.log(JSON.stringify(event));
 
-    console.log("LAMBDA RETURN IS:");
-    console.log(config.response);
+    if (event.body !== undefined) {
+        var bodyObj = JSON.parse(event.body);
+        event.Details = bodyObj.Details;
+    }
+    
+    if (!event.Details){
+        event.Details = {};
+        bad = true;
+    }
+    if (!event.Details.Parameters){
+        event.Details.Parameters = { badRequest: true};
+        bad = true;
+    }
 
-    config.callback(null, config.response);
-    config.context.succeed();
-  } else {
-    getNextQuestion(config);
-  }
+    if (!event.Details.ContactData || !event.Details.ContactData.ContactId){
+        event.Details.ContactData = { badRequest: true, ContactId : "badRequest"};
+        bad = true;
+    }
+    if (!event.Details.ContactData.Attributes){
+        event.Details.ContactData.Attributes = { badRequest: true};
+        bad = true;
+    }    
+    
+    var ev = {
+        ApiKey: process.env.API_KEY,
+        ContactId: event.Details.ContactData.ContactId,
+        Parameters: JSON.stringify(event.Details.Parameters),
+        Attributes: JSON.stringify((event.Details.ContactData.Attributes))
+    };
+    
+    if (bad){
+        ev.Event = failEvent;
+    }
+    
+    console.log(JSON.stringify(ev));
+    exports.sendData(ev, context, callback);
 };
 
-function updateSurveyProgress(
-  questionId,
-  questionText,
-  answerInput,
-  progressObj
-) {
-  const newQuestion = {
-    questionPrefixType: questionId,
-    questionText,
-    answerInput
-  };
-  progressObj.push(newQuestion);
-}
 
-function getNextQuestion(config) {
-  let url = process.env.SURVEY_URL;
+exports.sendData = (reqData, context, callback) => {
+    var dto = JSON.stringify(reqData);
+    try {
+        const options = {
+            hostname: process.env.API_HOST,
+            path: '/LambdaAccess/v3/NextQuestion',
+            port: 443,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': dto.length
+            }
+        };
 
-  url = url.replace("SURVEYPROGRESS", config.surveyProgress);
-  url = url.replace("CURRENTANSWER", config.currentAnswer);
-  url = url.replace("PQUESTIONPREFIXTYPE", config.previousQuestionPrefixType);
+        console.log(JSON.stringify(options));
+        console.log(dto);
 
-  https
-    .get(url, resp => {
-      let respContent = "";
+        const req = https.request(options, (res) => {
+            console.log('statusCode:', res.statusCode);
 
-      resp.on("data", data => {
-        respContent += data.toString();
-      });
+            res.on('data', (d) => {
+                console.log('Response: ' + d.toString());
+                callback(null, JSON.parse(d.toString()));
+            });
+        });
 
-      resp.on("end", () => {
-        config.response = JSON.parse(respContent);
-        config.response.previousResponse = respContent;
-        config.response.questionCount = 0;
-        config.response.questionTimestamp = Date.now();
+        req.on('error', (e) => {
+            console.error('error:', e);
+            callback(e);
+        });
 
-        updateSurveyProgress(
-          1,
-          config.response.nextQuestion,
-          config.currentAnswer,
-          config.surveyProgressDetail,
-          false
-        );
-        config.response.surveyProgressDetail = JSON.stringify(
-          config.surveyProgressDetail
-        );
+        req.write(dto);
+        req.end();
 
-        console.log("API RETURN IS:");
-        console.log(config.response);
-
-        config.callback(null, config.response);
-        config.context.succeed();
-      });
-    })
-    .on("error", e => {
-      console.log("Got error: " + e.message);
-      config.context.done(null, "FAILURE");
-    });
+    } catch (e) {
+        console.log("GetData Failed: " + e.message);
+        callback(e.message);
+    }
 }
