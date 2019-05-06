@@ -16,7 +16,7 @@ The benefits of this integration include:
 
 - No technical knowledge to maintain surveys: With *VoiceFoundry Post-call Surveys powered by SMG AgentTrack*, the survey questions are managed from a very simple web UI. There’s no need to alter contact flows to change your survey. Browse to the AgentTrack website and update at-will. The very next survey will reflect your changes.
 
-For details and launch information, see the [data sheet](https://voicefoundry.com/wp-content/uploads/2019/04/Quick-Start-VoiceFoundry-Powered-by-SMG-Agent-Track-User-Guide.pdf).
+For details and launch information, see the [data sheet](https://www.voicefoundry.com/smg-agenttrack.pdf).
 
 To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
 
