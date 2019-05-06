@@ -12,8 +12,7 @@ var send = function (event, context, responseStatus, responseData, physicalResou
     PhysicalResourceId: physicalResourceId || context.logStreamName,
     StackId: event.StackId,
     RequestId: event.RequestId,
-    LogicalResourceId: event.LogicalResourceId,
-    Data: responseData
+    LogicalResourceId: event.LogicalResourceId
   });
 
   console.log("Response body:\n", responseBody);
