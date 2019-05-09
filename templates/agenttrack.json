@@ -224,7 +224,7 @@
 			]
 		  },
 		  "Timeout": 10,
-		  "Runtime": "nodejs6.10"
+		  "Runtime": "nodejs8.10"
 		}
 	  },
 	  "SmgNextQuestionLambda": {
@@ -252,14 +252,14 @@
 			]
 		  },
 		  "Timeout": 10,
-		  "Runtime": "nodejs6.10"
+		  "Runtime": "nodejs8.10"
 		}
 	  },
 	  "SmgStackTestLambda": {
 		"Type": "AWS::Lambda::Function",
 		"Properties": {
 		  "Handler": "index.quickstart",
-		  "Runtime": "nodejs6.10",
+		  "Runtime": "nodejs8.10",
 		  "Description": "SMG AgentTrack integration test",
 		  "Environment": {
 			"Variables": {
