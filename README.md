@@ -1,22 +1,15 @@
 # connect-integration-smg-agenttrack
+## Amazon Connect integration for VoiceFoundry Post-Call Surveys powered by SMG AgentTrack
 
-## VoiceFoundry Post-call Surveys powered by SMG AgentTrack integration with Amazon Connect
+The *VoiceFoundry Post-call Surveys powered by SMG AgentTrack* integration enables contact centers to easily implement and manage post-call surveys and submit them to Service Management Group (SMG) for aggregation, reporting, and center analysis.
 
-This integration enables the SaaS AWS Marketplace listing entitled *VoiceFoundry Post-call Surveys powered by SMG AgentTrack*, which allows Contact Centers to easily implement and manage post-call surveys that are submitted to SMG for aggregation, reporting, and center analysis. The integration deploys two Lambda functions and sets up a trigger for when your Amazon Connect contact trace records are added to a specified S3 bucket.
+![Architecture for VoiceFoundry Post-Call Surveys with AgentTrack integration](https://d0.awsstatic.com/partner-network/QuickStart/connect/connect-integration-voicefoundry-smg-agenttrack-architecture.png)
 
-![Architecture for SMG AgentTrack integration](/smg_agenttrack_arch_v4.jpg)
+This integration deploys two AWS Lambda functions. The first Lambda function is wired to a contact flow in your Amazon Connect instance. When a customer completes a post-call survey, an Amazon Kinesis Data Firehose delivery stream feeds the call records in near real time to an Amazon Simple Storage Service (Amazon S3) bucket. The second Lambda function is triggered by the call record landing in the S3 bucket. It sends your survey results to SMG, where you can see reports, statistics, and key information from your surveys.
 
-*VoiceFoundry Post-call Surveys powered by SMG AgentTrack* was developed in concert with SMG (Service Management Group), the leader in customer service management measurement. SMG combines technology and insights that keep you informed and advance your brand for the next level of customer and employee loyalty. SMG connects the links between employee engagement, customer satisfaction and financial performance. All surveys submitted through the application are provided to SMG to give you advanced insight to your agent’s customer service performance and effectiveness.
+With VoiceFoundry Post-Call Surveys powered by SMG AgentTrack, the survey questions are managed from a very simple web UI on the AgentTrack website. There’s no need to alter call flows to change your survey, and no technical knowledge required to maintain surveys.
 
-The integration of *VoiceFoundry Post-call Surveys powered by SMG AgentTrack* with Amazon Connect provides a way for contact center managers to add post-call surveys into their call flows without having to update contact flows in order to change the surveys. After you have purchased VoiceFoundry Post-call Surveys powered by SMG AgentTrack from the AWS Marketplace, setup only requires you to add a single Lambda from this QuickStart to a contact flow in your Amazon Connect Instance. Once the call is complete, your existing Amazon Kinesis Firehose feeds the call records in near real-time to your existing S3 bucket. The QuickStart’s second Lambda, which is triggered by the call record landing in your S3 bucket, sends over your survey results to SMG, where you can see reports, stats, and key information coming from your surveys.
-
-The benefits of this integration include:
-
-- Ease of Use: All of the components to enable *VoiceFoundry Post-call Surveys powered by SMG AgentTrack* for your Amazon Connect instance is installed with the click of a button.
-
-- No technical knowledge to maintain surveys: With *VoiceFoundry Post-call Surveys powered by SMG AgentTrack*, the survey questions are managed from a very simple web UI. There’s no need to alter contact flows to change your survey. Browse to the AgentTrack website and update at-will. The very next survey will reflect your changes.
-
-For details and launch information, see the [data sheet](https://www.voicefoundry.com/smg-agenttrack.pdf).
+For details and launch information, see the [data sheet](https://fwd.aws/DJ49V).
 
 To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
 
