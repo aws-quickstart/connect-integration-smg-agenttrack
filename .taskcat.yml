@@ -1,0 +1,14 @@
+project:
+  name: connect-integration-smg-agenttrack
+  owner: support@voicefoundry.com
+  package_lambda: false
+  regions:
+  - us-east-1
+tests:
+  connect-integration-smg-agenttrackt1:
+    parameters:
+      AgentTrackApiKey: d65d7f23-d262-44aa-a50c-2e8e4630917e
+      ConnectInstanceId: 2fee1c1f-9d48-42f9-99ee-d129e70dd33f
+    regions:
+    - us-east-1
+    template: templates/agenttrack.template.yaml
